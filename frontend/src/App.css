@@ -1,0 +1,133 @@
+:root {
+  --primary: #d32f2f; /* Rojo emergencia */
+  --secondary: #1976d2; /* Azul brigada */
+  --bg: #f4f6f8;
+  --card-bg: #ffffff;
+  --text: #333;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Encabezado */
+header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 3px solid var(--primary);
+  padding-bottom: 10px;
+}
+
+header h1 {
+  color: var(--primary);
+  margin: 0;
+  font-size: 2.5rem;
+}
+
+/* Layout Principal: Dos columnas en PC, una en celular */
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr; /* En celular, uno debajo del otro */
+  }
+}
+
+/* Formulario */
+.form-card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  height: fit-content;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Importante para que no se salga */
+}
+
+button.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button.btn-submit:hover {
+  background-color: #b71c1c;
+}
+
+/* Lista de Incidentes */
+.incidents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.incident-card {
+  background: var(--card-bg);
+  border-left: 5px solid var(--secondary);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.incident-card.structural { border-color: #ff9800; } /* Naranja */
+.incident-card.medical { border-color: #d32f2f; } /* Rojo */
+.incident-card.rescue { border-color: #2196f3; } /* Azul */
+
+.tag {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: white;
+  background: #777;
+  margin-bottom: 10px;
+}
+.tag.medical { background: #d32f2f; }
+.tag.structural { background: #ff9800; }
+.tag.rescue { background: #2196f3; }
+@media (max-width: 600px) {
+  .dashboard {
+    flex-direction: column; /* Apila el formulario y la lista uno sobre otro */
+  }
+  .container {
+    padding: 10px;
+  }
+}
