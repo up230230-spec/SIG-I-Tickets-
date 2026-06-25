@@ -1,7 +1,7 @@
 {
-  "name": "brigada-sos-api",
+  "name": "sig-i-backend",
   "version": "1.0.0",
-  "description": "API de coordinación para Brigada SOS",
+  "description": "API de SIG-I — Sistema Integral de Gestión de Incidencias Universitarias",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
