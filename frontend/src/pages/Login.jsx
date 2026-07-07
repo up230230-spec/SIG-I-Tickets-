@@ -49,7 +49,7 @@ export default function Login() {
               id="email"
               name="email"
               type="email"
-              placeholder="up230230@alumnos.upa.edu.mx"
+              placeholder="up******@alumnos.upa.edu.mx"
               value={form.email}
               onChange={onChange}
               required

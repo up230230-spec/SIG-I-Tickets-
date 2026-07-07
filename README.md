@@ -69,7 +69,7 @@ Contraseña para todas: **`password123`**
 | Operaciones | `operaciones@alumnos.upa.edu.mx` |
 | Admin de área (TI) | `ti@alumnos.upa.edu.mx` |
 | Rector | `rector@alumnos.upa.edu.mx` |
-| Usuario general | `up230230@alumnos.upa.edu.mx` |
+| Usuario general | `up******@alumnos.upa.edu.mx` |
 
 O regístrate con tu propio correo institucional `up######@alumnos.upa.edu.mx`.
 
