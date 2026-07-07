@@ -28,16 +28,36 @@ export function AuthProvider({ children }) {
     return user;
   };
 
+  // Registro: en desarrollo el backend devuelve token+user (auto-login).
+  const register = async (payload) => {
+    const res = await api.post('/auth/register', payload, { auth: false });
+    if (res.token) {
+      localStorage.setItem('sigi_token', res.token);
+      setUser(res.user);
+    }
+    return res;
+  };
+
   const logout = () => {
     localStorage.removeItem('sigi_token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+/** Ruta de inicio según el rol del usuario (para redirigir tras login). */
+export const homeRouteForRole = (role) =>
+  ({
+    operaciones: '/operaciones',
+    admin_area: '/area',
+    rector: '/ejecutivo',
+    jefe_carrera: '/mis-tickets',
+    usuario_general: '/',
+  }[role] || '/');

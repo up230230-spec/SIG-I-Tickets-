@@ -50,5 +50,93 @@ body {
   border-radius: 8px;
   padding: 0.6rem 1rem;
   cursor: pointer;
+  font-size: 0.95rem;
 }
 .btn-primary:hover { background: var(--blue-700); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--blue-600);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+.btn-ghost:hover { background: var(--blue-50); }
+
+/* --- Layout general de páginas --- */
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+.page h1 { color: var(--blue-900); }
+.page .meta { color: var(--text-muted); }
+
+/* --- Formularios --- */
+.form-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+}
+.field { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.field label { font-size: 0.85rem; font-weight: 600; color: var(--blue-800); }
+.field input, .field select, .field textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px var(--blue-100);
+}
+
+/* --- Pantalla de autenticación centrada --- */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--blue-800), var(--blue-600));
+}
+.auth-screen .brand { text-align: center; margin-bottom: 1.25rem; }
+.auth-screen .brand h1 { color: #fff; margin: 0; font-size: 1.6rem; }
+.auth-screen .brand p { color: var(--blue-100); margin: 0.25rem 0 0; font-size: 0.9rem; }
+.auth-links { margin-top: 1rem; font-size: 0.9rem; text-align: center; }
+.auth-links a { color: var(--blue-600); text-decoration: none; }
+.auth-links a:hover { text-decoration: underline; }
+
+/* --- Alertas / mensajes --- */
+.alert {
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+.alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+/* --- Barra de navegación --- */
+.navbar {
+  background: var(--blue-900);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.navbar .brand { font-weight: 700; color: #fff; text-decoration: none; }
+.navbar a { color: var(--blue-100); text-decoration: none; font-size: 0.9rem; }
+.navbar a:hover, .navbar a.active { color: #fff; }
+.navbar .spacer { flex: 1; }
+.navbar .user { font-size: 0.85rem; color: var(--blue-100); }

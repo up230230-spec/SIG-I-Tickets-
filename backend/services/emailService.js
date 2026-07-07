@@ -1,18 +1,28 @@
 /**
  * Servicio de correo (Módulo A): verificación de cuenta y recuperación de contraseña.
  *
- * STUB: en producción usar nodemailer con la config SMTP de env.js.
- * Por ahora solo registra en consola para no bloquear el desarrollo.
+ * Sin SMTP configurado (ver .env), registra el enlace en consola para no
+ * bloquear el desarrollo. Si defines SMTP_HOST/USER/PASS, aquí se integraría
+ * nodemailer para el envío real.
  */
+const { NODE_ENV, PORT } = require('../config/env');
+
+const apiBase = `http://localhost:${PORT || 3000}`;
 
 const sendVerificationEmail = async (to, token) => {
-  // TODO: enviar correo real con enlace /api/auth/verify/:token
-  console.log(`[emailService] Verificación → ${to} | token=${token}`);
+  const link = `${apiBase}/api/auth/verify/${token}`;
+  console.log(`\n[emailService] Verificación de cuenta para ${to}`);
+  console.log(`  → ${link}`);
+  if (NODE_ENV !== 'production') {
+    console.log('  (modo desarrollo: la cuenta ya quedó verificada automáticamente)\n');
+  }
 };
 
 const sendPasswordResetEmail = async (to, token) => {
-  // TODO: enviar enlace de un solo uso (vigencia 30 min) /reset-password/:token
-  console.log(`[emailService] Reset password → ${to} | token=${token}`);
+  // El token se usa desde el front (o vía POST /api/auth/reset-password/:token).
+  console.log(`\n[emailService] Recuperación de contraseña para ${to}`);
+  console.log(`  token de un solo uso (30 min): ${token}`);
+  console.log(`  → POST ${apiBase}/api/auth/reset-password/${token}\n`);
 };
 
 module.exports = { sendVerificationEmail, sendPasswordResetEmail };
