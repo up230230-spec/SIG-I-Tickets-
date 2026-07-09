@@ -36,7 +36,7 @@ modelos y endpoints.
 cd backend
 npm install                 # instala dependencias
 copy .env.example .env      # crea tu archivo de entorno (en Mac/Linux: cp)
-# ⚠️ edita backend/.env y pon un MONGO_URI y JWT_SECRET válidos
+# edita backend/.env y pon un MONGO_URI y JWT_SECRET válidos
 npm run seed                # crea áreas + usuarios de prueba (idempotente)
 npm run dev                 # arranca la API en http://localhost:3000
 ```
@@ -87,7 +87,7 @@ O regístrate con tu propio correo institucional `up######@alumnos.upa.edu.mx`.
 `usuario_general` · `admin_area` · `operaciones` · `rector` · `jefe_carrera`
 (definidos en [backend/config/roles.js](backend/config/roles.js)).
 
-## ⚠️ Seguridad
+##  Seguridad
 
 El `backend/.env` contiene credenciales reales y **no debe subirse** (ya está en
 `.gitignore`). Como fue commiteado en la versión inicial, **rota las credenciales

@@ -1,22 +1,118 @@
-import { INCIDENT_TYPES } from '../config/incidentTypes';
-
 /**
  * Módulo B — Reporte de incidencia.
- * STUB: muestra el catálogo de tipos. Cada opción se asociará a su color de orilla.
- * El formulario final tendrá: tipo, ubicación, descripción y hasta 3 imágenes.
+ * Formulario: tipo (catálogo INC con color de orilla), título, ubicación y
+ * descripción. La asignación de área/severidad la hace el backend según el tipo.
+ * Incluye el botón de EMERGENCIA (formulario mínimo, alerta inmediata).
  */
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../api/client';
+import { INCIDENT_TYPES, accentFor } from '../config/incidentTypes';
+import Navbar from '../components/Navbar';
+
+// Id de cliente para evitar duplicados si se reenvía el formulario.
+const newClientId = () =>
+  (crypto.randomUUID && crypto.randomUUID()) || `c-${Date.now()}-${Math.random()}`;
+
 export default function ReportIncident() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    incidentCode: 'INC-001',
+    title: '',
+    location: '',
+    description: '',
+  });
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setBusy(true);
+    try {
+      await api.post('/tickets', { ...form, clientSideId: newClientId() });
+      navigate('/mis-tickets');
+    } catch (err) {
+      setError(err.message || 'No se pudo enviar el reporte.');
+      setBusy(false);
+    }
+  };
+
+  const emergency = async () => {
+    const description = window.prompt('Describe brevemente la emergencia:');
+    if (!description) return;
+    const location = window.prompt('Ubicación (edificio / aula / zona):') || '';
+    setBusy(true);
+    try {
+      await api.post('/tickets/emergency', { description, location });
+      navigate('/mis-tickets');
+    } catch (err) {
+      setError(err.message || 'No se pudo enviar la emergencia.');
+      setBusy(false);
+    }
+  };
+
   return (
-    <section className="page">
-      <h1>Reportar incidencia</h1>
-      <p className="meta">TODO: formulario (tipo, ubicación, descripción, imágenes).</p>
-      <ul>
-        {Object.entries(INCIDENT_TYPES).map(([code, t]) => (
-          <li key={code} style={{ borderLeft: `6px solid ${t.accent}`, paddingLeft: 8, margin: '4px 0' }}>
-            {code} — {t.label} ({t.area})
-          </li>
-        ))}
-      </ul>
-    </section>
+    <>
+      <Navbar />
+      <section className="page">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <h1 style={{ flex: 1 }}>Reportar incidencia</h1>
+          <button
+            className="btn-primary"
+            style={{ background: '#dc2626' }}
+            onClick={emergency}
+            disabled={busy}
+          >
+            🚨 Emergencia
+          </button>
+        </div>
+
+        <form className="card" onSubmit={submit} style={{ maxWidth: 620, marginTop: '1rem' }}>
+          {error && <div className="alert alert-error">{error}</div>}
+
+          <div className="field">
+            <label htmlFor="incidentCode">Tipo de incidencia</label>
+            <select
+              id="incidentCode"
+              name="incidentCode"
+              value={form.incidentCode}
+              onChange={onChange}
+              style={{ borderLeft: `6px solid ${accentFor(form.incidentCode)}` }}
+            >
+              {Object.entries(INCIDENT_TYPES).map(([code, t]) => (
+                <option key={code} value={code}>
+                  {code} — {t.label} ({t.area})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="field">
+            <label htmlFor="title">Título</label>
+            <input id="title" name="title" value={form.title} onChange={onChange} required
+              placeholder="Resumen corto del problema" />
+          </div>
+
+          <div className="field">
+            <label htmlFor="location">Ubicación</label>
+            <input id="location" name="location" value={form.location} onChange={onChange}
+              placeholder="Edificio C, aula 204, baño planta baja…" />
+          </div>
+
+          <div className="field">
+            <label htmlFor="description">Descripción</label>
+            <textarea id="description" name="description" rows={4} value={form.description}
+              onChange={onChange} required placeholder="Describe lo que ocurre con el mayor detalle posible." />
+          </div>
+
+          <button className="btn-primary" disabled={busy}>
+            {busy ? 'Enviando…' : 'Enviar reporte'}
+          </button>
+        </form>
+      </section>
+    </>
   );
 }

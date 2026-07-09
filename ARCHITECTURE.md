@@ -1,7 +1,8 @@
 # Arquitectura — SIG-I (esqueleto)
 
-Mapa de la reestructuración. Estado actual: **estructura + modelos completos +
-stubs por módulo**. Los controllers responden `501` hasta implementar su lógica.
+Mapa de la reestructuración. Estado actual: **backend completo** (Módulos A–E
+implementados) y **frontend funcional** (páginas conectadas a la API). El
+esqueleto original está descrito abajo; ya no quedan controllers en `501`.
 
 ## Backend (`/backend`)
 
@@ -26,19 +27,19 @@ backend/
 │   ├── rbac.js            requirePermission / requireRole
 │   ├── audit.js           recordAudit() → AuditLog
 │   └── errorHandler.js    notFound + errorHandler global
-├── controllers/           STUBS (contrato de cada endpoint)
+├── controllers/           IMPLEMENTADOS
 │   ├── authController.js      Módulo A
 │   ├── ticketController.js    Módulos B/C
-│   ├── areaController.js
-│   ├── dashboardController.js  Módulo D
-│   ├── reportController.js     Módulo D (export)
+│   ├── areaController.js       CRUD de áreas + catálogo INC
+│   ├── dashboardController.js  Módulo D (global, heatmap, executive)
+│   ├── reportController.js     Módulo D (export CSV/PDF)
 │   └── forumController.js      Módulo E
 ├── routes/                Rutas por módulo + index (agregador → /api)
-├── services/              STUBS
+├── services/
 │   ├── emailService.js        Verificación / reset (nodemailer)
 │   ├── alertService.js        Alertas en tiempo real (Socket.io, críticos ≤10s)
 │   ├── escalationService.js   Escalamiento 48h → severidad Alta
-│   └── reportService.js       Export CSV / PDF
+│   └── reportService.js       Export CSV / PDF (sin dependencias externas)
 └── sockets/index.js       Gateway Socket.io (salas por área)
 ```
 

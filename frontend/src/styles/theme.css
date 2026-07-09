@@ -140,3 +140,54 @@ body {
 .navbar a:hover, .navbar a.active { color: #fff; }
 .navbar .spacer { flex: 1; }
 .navbar .user { font-size: 0.85rem; color: var(--blue-100); }
+.navbar .btn-logout {
+  background: transparent; color: var(--blue-100);
+  border: 1px solid var(--blue-700); border-radius: 8px;
+  padding: 0.35rem 0.7rem; cursor: pointer; font-size: 0.85rem;
+}
+.navbar .btn-logout:hover { background: var(--blue-800); color: #fff; }
+
+/* --- Utilidades de dashboards / listados --- */
+.toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin: 1rem 0; }
+.toolbar .field { margin-bottom: 0; }
+
+.grid { display: grid; gap: 1rem; }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 800px) {
+  .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 1.1rem 1.25rem;
+}
+.stat-card { text-align: center; }
+.stat-card .value { font-size: 2rem; font-weight: 700; color: var(--blue-800); line-height: 1; }
+.stat-card .label { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.35rem; }
+
+.badge {
+  display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px;
+  font-size: 0.75rem; font-weight: 600; background: var(--blue-100); color: var(--blue-800);
+}
+.badge.sev-critica { background: #fee2e2; color: #b91c1c; }
+.badge.sev-alta { background: #ffedd5; color: #c2410c; }
+.badge.sev-media { background: var(--blue-100); color: var(--blue-800); }
+.badge.official { background: #dcfce7; color: #15803d; }
+
+.table { width: 100%; border-collapse: collapse; background: var(--surface);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.table th, .table td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+.table th { background: var(--blue-50); color: var(--blue-800); font-weight: 600; }
+.table tr:last-child td { border-bottom: none; }
+.table .clickable { cursor: pointer; }
+.table .clickable:hover td { background: var(--blue-50); }
+
+/* Barra del mapa de calor */
+.heat-row { display: flex; align-items: center; gap: 0.75rem; margin: 0.5rem 0; }
+.heat-row .name { width: 130px; font-weight: 600; color: var(--blue-800); }
+.heat-track { flex: 1; background: var(--blue-50); border-radius: 6px; height: 22px; overflow: hidden; }
+.heat-fill { height: 100%; border-radius: 6px; }
+
+.empty { color: var(--text-muted); padding: 1.5rem; text-align: center; }
