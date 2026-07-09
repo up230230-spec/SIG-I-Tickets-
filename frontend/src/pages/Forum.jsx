@@ -2,10 +2,14 @@
  * Módulo E — Foro Institucional.
  * Hilos por categoría, publicación anónima, respuestas oficiales (admin/oper.)
  * y moderación (fijar / cerrar / eliminar, solo Operaciones).
+ * Estado gestionado con Redux (slice `forum`).
  */
 import { useEffect, useState } from 'react';
-import { api } from '../api/client';
+import { useSelector, useDispatch } from 'react-redux';
 import { useAuth } from '../context/AuthContext';
+import {
+  fetchPosts, fetchPost, createPost, addReply, moderatePost, deletePost, clearDetail,
+} from '../store/forumSlice';
 import Navbar from '../components/Navbar';
 
 const CATEGORIES = ['sugerencias', 'agradecimientos', 'preguntas', 'otros'];
@@ -15,57 +19,40 @@ export default function Forum() {
   const canModerate = user.role === 'operaciones';
   const canOfficial = ['admin_area', 'operaciones'].includes(user.role);
 
-  const [posts, setPosts] = useState([]);
+  const dispatch = useDispatch();
+  const { posts, detail, error } = useSelector((s) => s.forum);
   const [category, setCategory] = useState('');
-  const [error, setError] = useState('');
-  const [detail, setDetail] = useState(null);
-
   const [form, setForm] = useState({ title: '', body: '', category: 'sugerencias', isAnonymous: false });
   const [reply, setReply] = useState({ body: '', isAnonymous: false, isOfficial: false });
 
-  const load = async () => {
-    try {
-      const qs = category ? `?category=${category}` : '';
-      setPosts(await api.get(`/forum${qs}`));
-      setError('');
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+  useEffect(() => { dispatch(fetchPosts(category)); }, [dispatch, category]);
 
-  useEffect(() => { load(); }, [category]);
-
-  const open = async (id) => setDetail(await api.get(`/forum/${id}`));
-
-  const createPost = async (e) => {
+  const createThread = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.body.trim()) return;
     try {
-      await api.post('/forum', form);
+      await dispatch(createPost(form)).unwrap();
       setForm({ title: '', body: '', category: 'sugerencias', isAnonymous: false });
-      load();
-    } catch (err) { alert(err.message); }
+      dispatch(fetchPosts(category));
+    } catch (err) { alert(err); }
   };
 
   const sendReply = async (e) => {
     e.preventDefault();
     if (!reply.body.trim()) return;
-    const created = await api.post(`/forum/${detail.id}/replies`, reply);
-    setDetail({ ...detail, replies: [...(detail.replies || []), created] });
+    await dispatch(addReply({ id: detail.id, ...reply })).unwrap();
     setReply({ body: '', isAnonymous: false, isOfficial: false });
   };
 
   const moderate = async (patch) => {
-    const updated = await api.patch(`/forum/${detail.id}/moderate`, patch);
-    setDetail({ ...detail, ...updated });
-    load();
+    await dispatch(moderatePost({ id: detail.id, patch })).unwrap();
+    dispatch(fetchPosts(category));
   };
 
   const remove = async () => {
     if (!window.confirm('¿Eliminar este hilo y sus respuestas?')) return;
-    await api.delete(`/forum/${detail.id}`);
-    setDetail(null);
-    load();
+    await dispatch(deletePost(detail.id)).unwrap();
+    dispatch(fetchPosts(category));
   };
 
   return (
@@ -78,7 +65,7 @@ export default function Forum() {
         <div className="grid cols-2" style={{ alignItems: 'start' }}>
           {/* Columna izquierda: crear + listar */}
           <div>
-            <form className="card" onSubmit={createPost}>
+            <form className="card" onSubmit={createThread}>
               <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Nuevo hilo</h2>
               <div className="field">
                 <label>Categoría</label>
@@ -115,7 +102,7 @@ export default function Forum() {
             {posts.length === 0 ? (
               <p className="empty">No hay hilos en esta categoría.</p>
             ) : posts.map((p) => (
-              <div key={p.id} className="card clickable" style={{ marginBottom: '0.75rem', cursor: 'pointer' }} onClick={() => open(p.id)}>
+              <div key={p.id} className="card clickable" style={{ marginBottom: '0.75rem', cursor: 'pointer' }} onClick={() => dispatch(fetchPost(p.id))}>
                 <div className="meta">
                   {p.pinned && '📌 '}<span className="badge">{p.category}</span> · {p.author?.name || 'Anónimo'} · {p.replyCount} respuestas {p.closed && '· 🔒 cerrado'}
                 </div>
@@ -134,7 +121,7 @@ export default function Forum() {
                   <h2 style={{ flex: 1, margin: 0, color: 'var(--blue-900)' }}>
                     {detail.pinned && '📌 '}{detail.title}
                   </h2>
-                  <button className="btn-ghost" onClick={() => setDetail(null)}>Cerrar</button>
+                  <button className="btn-ghost" onClick={() => dispatch(clearDetail())}>Cerrar</button>
                 </div>
                 <p className="meta">
                   <span className="badge">{detail.category}</span> · {detail.author?.name || 'Anónimo'}

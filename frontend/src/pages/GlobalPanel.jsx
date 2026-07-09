@@ -1,9 +1,11 @@
 /**
  * Módulo D — Panel global (Equipo de Operaciones).
- * Vista global de tickets con agregados, mapa de calor por área, últimos
- * reportes y exportación de reportes CSV/PDF. Refresco automático cada 60s.
+ * Agregados, mapa de calor por área, últimos reportes y exportación CSV/PDF.
+ * Refresco automático cada 60s. Estado gestionado con Redux (slice `dashboard`).
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchGlobal, fetchHeatmap } from '../store/dashboardSlice';
 import { api } from '../api/client';
 import Navbar from '../components/Navbar';
 
@@ -24,29 +26,15 @@ const downloadReport = async (format) => {
 };
 
 export default function GlobalPanel() {
-  const [data, setData] = useState(null);
-  const [heat, setHeat] = useState([]);
-  const [error, setError] = useState('');
-
-  const load = useCallback(async () => {
-    try {
-      const [g, h] = await Promise.all([
-        api.get('/dashboard/global'),
-        api.get('/dashboard/heatmap'),
-      ]);
-      setData(g);
-      setHeat(h);
-      setError('');
-    } catch (err) {
-      setError(err.message);
-    }
-  }, []);
+  const dispatch = useDispatch();
+  const { global: data, heatmap: heat, error } = useSelector((s) => s.dashboard);
 
   useEffect(() => {
+    const load = () => { dispatch(fetchGlobal()); dispatch(fetchHeatmap()); };
     load();
     const id = setInterval(load, 60000); // refresco automático
     return () => clearInterval(id);
-  }, [load]);
+  }, [dispatch]);
 
   const maxOpen = Math.max(1, ...heat.map((c) => c.open));
 
@@ -54,8 +42,8 @@ export default function GlobalPanel() {
     <>
       <Navbar />
       <section className="page">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <h1 style={{ flex: 1 }}>Panel global de operaciones</h1>
+        <div className="page-head">
+          <h1>Panel global de operaciones</h1>
           <button className="btn-ghost" onClick={() => downloadReport('csv')}>Exportar CSV</button>
           <button className="btn-ghost" onClick={() => downloadReport('pdf')}>Exportar PDF</button>
         </div>
@@ -86,20 +74,22 @@ export default function GlobalPanel() {
             </div>
 
             <h2 style={{ color: 'var(--blue-900)' }}>Últimos reportes</h2>
-            <table className="table">
-              <thead><tr><th>Folio</th><th>Título</th><th>Área</th><th>Sev.</th><th>Estado</th></tr></thead>
-              <tbody>
-                {data.recent.map((t) => (
-                  <tr key={t.id}>
-                    <td>{t.folio}</td>
-                    <td>{t.isEmergency ? '🚨 ' : ''}{t.title}</td>
-                    <td>{t.area}</td>
-                    <td><span className={`badge sev-${t.severity}`}>{t.severity}</span></td>
-                    <td>{t.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="table-wrap">
+              <table className="table">
+                <thead><tr><th>Folio</th><th>Título</th><th>Área</th><th>Sev.</th><th>Estado</th></tr></thead>
+                <tbody>
+                  {data.recent.map((t) => (
+                    <tr key={t.id}>
+                      <td>{t.folio}</td>
+                      <td>{t.isEmergency ? '🚨 ' : ''}{t.title}</td>
+                      <td>{t.area}</td>
+                      <td><span className={`badge sev-${t.severity}`}>{t.severity}</span></td>
+                      <td>{t.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </section>

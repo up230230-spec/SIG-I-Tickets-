@@ -1,56 +1,34 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { api } from '../api/client';
-
 /**
- * Contexto de autenticación: guarda el usuario/rol y el token.
- * STUB funcional básico: persiste el token y expone login/logout.
+ * Autenticación respaldada por Redux.
+ *
+ * El estado de sesión vive ahora en el slice `auth` del store. Este módulo
+ * conserva la API previa (`AuthProvider`, `useAuth`, `homeRouteForRole`) como
+ * una capa fina sobre Redux para no tocar las páginas que ya la consumían.
  */
-const AuthContext = createContext(null);
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { loadMe, login as loginThunk, register as registerThunk, logout as logoutAction } from '../store/authSlice';
 
+// Dispara la carga del usuario actual (token → /auth/me) al montar la app.
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('sigi_token');
-    if (!token) return setLoading(false);
-    api
-      .get('/auth/me')
-      .then(setUser)
-      .catch(() => localStorage.removeItem('sigi_token'))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const login = async (email, password) => {
-    const { token, user } = await api.post('/auth/login', { email, password }, { auth: false });
-    localStorage.setItem('sigi_token', token);
-    setUser(user);
-    return user;
-  };
-
-  // Registro: en desarrollo el backend devuelve token+user (auto-login).
-  const register = async (payload) => {
-    const res = await api.post('/auth/register', payload, { auth: false });
-    if (res.token) {
-      localStorage.setItem('sigi_token', res.token);
-      setUser(res.user);
-    }
-    return res;
-  };
-
-  const logout = () => {
-    localStorage.removeItem('sigi_token');
-    setUser(null);
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const dispatch = useDispatch();
+  useEffect(() => { dispatch(loadMe()); }, [dispatch]);
+  return children;
 }
 
-export const useAuth = () => useContext(AuthContext);
+// Hook con la misma forma que antes: { user, loading, login, register, logout }.
+export function useAuth() {
+  const dispatch = useDispatch();
+  const { user, loading } = useSelector((s) => s.auth);
+
+  return {
+    user,
+    loading,
+    login: (email, password) => dispatch(loginThunk({ email, password })).unwrap(),
+    register: (payload) => dispatch(registerThunk(payload)).unwrap(),
+    logout: () => dispatch(logoutAction()),
+  };
+}
 
 /** Ruta de inicio según el rol del usuario (para redirigir tras login). */
 export const homeRouteForRole = (role) =>

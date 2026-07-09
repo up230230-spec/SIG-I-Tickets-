@@ -15,7 +15,7 @@ export default function Navbar() {
   const links = [
     { to: '/', label: 'Reportar', show: ['usuario_general', 'jefe_carrera', 'operaciones'].includes(r) },
     { to: '/mis-tickets', label: 'Mis reportes', show: ['usuario_general', 'jefe_carrera', 'operaciones'].includes(r) },
-    { to: '/area', label: 'Panel de área', show: ['admin_area', 'operaciones'].includes(r) },
+    { to: '/area', label: r === 'operaciones' ? 'Tickets' : 'Panel de área', show: ['admin_area', 'operaciones'].includes(r) },
     { to: '/operaciones', label: 'Operaciones', show: r === 'operaciones' },
     { to: '/ejecutivo', label: 'Ejecutivo', show: ['rector', 'operaciones'].includes(r) },
     { to: '/foro', label: 'Foro', show: true },

@@ -166,13 +166,17 @@ exports.createEmergency = async (req, res, next) => {
 };
 
 // GET /api/tickets — lista filtrada según rol.
+// ?mine=1 fuerza "solo los que YO reporté" (para la vista "Mis reportes"),
+// independientemente del rol (un admin/operaciones también puede ver los suyos).
 exports.listTickets = async (req, res, next) => {
   try {
-    const filter = scopeFilterForUser(req.user);
+    const mineOnly = req.query.mine === '1' || req.query.mine === 'true';
+    const filter = mineOnly ? { reportedBy: req.user._id } : scopeFilterForUser(req.user);
 
     // Filtros opcionales por querystring.
     if (req.query.status) filter.status = req.query.status;
-    if (req.query.area && roleHasPermission(req.user.role, PERMISSIONS.TICKET_READ_ALL)) {
+    // El filtro por área solo aplica en la vista global (no en "mis reportes").
+    if (!mineOnly && req.query.area && roleHasPermission(req.user.role, PERMISSIONS.TICKET_READ_ALL)) {
       filter.area = req.query.area;
     }
     if (req.query.severity) filter.severity = req.query.severity;

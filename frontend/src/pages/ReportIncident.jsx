@@ -2,11 +2,12 @@
  * Módulo B — Reporte de incidencia.
  * Formulario: tipo (catálogo INC con color de orilla), título, ubicación y
  * descripción. La asignación de área/severidad la hace el backend según el tipo.
- * Incluye el botón de EMERGENCIA (formulario mínimo, alerta inmediata).
+ * Incluye el botón de EMERGENCIA. Envío gestionado con Redux (slice `tickets`).
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api/client';
+import { useDispatch } from 'react-redux';
+import { createTicket, createEmergency } from '../store/ticketsSlice';
 import { INCIDENT_TYPES, accentFor } from '../config/incidentTypes';
 import Navbar from '../components/Navbar';
 
@@ -16,6 +17,7 @@ const newClientId = () =>
 
 export default function ReportIncident() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [form, setForm] = useState({
     incidentCode: 'INC-001',
     title: '',
@@ -32,10 +34,10 @@ export default function ReportIncident() {
     setError('');
     setBusy(true);
     try {
-      await api.post('/tickets', { ...form, clientSideId: newClientId() });
+      await dispatch(createTicket({ ...form, clientSideId: newClientId() })).unwrap();
       navigate('/mis-tickets');
     } catch (err) {
-      setError(err.message || 'No se pudo enviar el reporte.');
+      setError(err || 'No se pudo enviar el reporte.');
       setBusy(false);
     }
   };
@@ -46,10 +48,10 @@ export default function ReportIncident() {
     const location = window.prompt('Ubicación (edificio / aula / zona):') || '';
     setBusy(true);
     try {
-      await api.post('/tickets/emergency', { description, location });
+      await dispatch(createEmergency({ description, location })).unwrap();
       navigate('/mis-tickets');
     } catch (err) {
-      setError(err.message || 'No se pudo enviar la emergencia.');
+      setError(err || 'No se pudo enviar la emergencia.');
       setBusy(false);
     }
   };
@@ -58,8 +60,8 @@ export default function ReportIncident() {
     <>
       <Navbar />
       <section className="page">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <h1 style={{ flex: 1 }}>Reportar incidencia</h1>
+        <div className="page-head">
+          <h1>Reportar incidencia</h1>
           <button
             className="btn-primary"
             style={{ background: '#dc2626' }}

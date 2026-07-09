@@ -1,19 +1,18 @@
 /**
  * Módulo D — Dashboard ejecutivo (Rector, solo lectura).
  * KPIs institucionales: cumplimiento de SLA, tiempo medio de resolución,
- * backlog abierto y volumen por área/severidad.
+ * backlog abierto y volumen por área/severidad. Estado con Redux (`dashboard`).
  */
-import { useEffect, useState } from 'react';
-import { api } from '../api/client';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchExecutive } from '../store/dashboardSlice';
 import Navbar from '../components/Navbar';
 
 export default function ExecutiveDashboard() {
-  const [k, setK] = useState(null);
-  const [error, setError] = useState('');
+  const dispatch = useDispatch();
+  const { executive: k, error } = useSelector((s) => s.dashboard);
 
-  useEffect(() => {
-    api.get('/dashboard/executive').then(setK).catch((err) => setError(err.message));
-  }, []);
+  useEffect(() => { dispatch(fetchExecutive()); }, [dispatch]);
 
   const slaColor = k
     ? k.slaCompliance >= 90 ? '#15803d' : k.slaCompliance >= 70 ? '#c2410c' : '#b91c1c'

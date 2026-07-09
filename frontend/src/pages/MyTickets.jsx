@@ -1,47 +1,29 @@
 /**
  * Módulo B — Mis reportes (usuario general / jefe de carrera).
- * Lista los tickets propios con <TicketCard /> y permite abrir el detalle
- * (estado actual, historial de comentarios y añadir un comentario público).
+ * Lista SOLO los tickets propios (?mine=1) con <TicketCard /> y permite abrir
+ * el detalle (estado, historial de comentarios y añadir un comentario público).
+ * Estado gestionado con Redux (slice `tickets`).
  */
 import { useEffect, useState } from 'react';
-import { api } from '../api/client';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchTickets, fetchTicket, addComment, clearDetail } from '../store/ticketsSlice';
 import TicketCard from '../components/TicketCard';
 import Navbar from '../components/Navbar';
 
 export default function MyTickets() {
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [detail, setDetail] = useState(null);
+  const dispatch = useDispatch();
+  const { list, detail, loading, error } = useSelector((s) => s.tickets);
   const [comment, setComment] = useState('');
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      setTickets(await api.get('/tickets'));
-      setError('');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const open = async (id) => {
-    try {
-      setDetail(await api.get(`/tickets/${id}`));
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+  useEffect(() => {
+    dispatch(fetchTickets({ mine: 1 }));
+    return () => { dispatch(clearDetail()); };
+  }, [dispatch]);
 
   const sendComment = async (e) => {
     e.preventDefault();
     if (!comment.trim()) return;
-    const updated = await api.post(`/tickets/${detail.id}/comments`, { body: comment });
-    setDetail({ ...detail, comments: [...(detail.comments || []), updated] });
+    await dispatch(addComment({ id: detail.id, body: comment })).unwrap();
     setComment('');
   };
 
@@ -53,12 +35,12 @@ export default function MyTickets() {
         {error && <div className="alert alert-error">{error}</div>}
         {loading ? (
           <p className="meta">Cargando…</p>
-        ) : tickets.length === 0 ? (
+        ) : list.length === 0 ? (
           <p className="empty">Aún no has reportado ninguna incidencia.</p>
         ) : (
           <div className="grid cols-2">
-            {tickets.map((t) => (
-              <TicketCard key={t.id} ticket={t} onClick={() => open(t.id)} />
+            {list.map((t) => (
+              <TicketCard key={t.id} ticket={t} onClick={() => dispatch(fetchTicket(t.id))} />
             ))}
           </div>
         )}
@@ -67,7 +49,7 @@ export default function MyTickets() {
           <div className="card" style={{ marginTop: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <h2 style={{ flex: 1, margin: 0 }}>{detail.folio} · {detail.title}</h2>
-              <button className="btn-ghost" onClick={() => setDetail(null)}>Cerrar</button>
+              <button className="btn-ghost" onClick={() => dispatch(clearDetail())}>Cerrar</button>
             </div>
             <p className="meta">
               {detail.area} · <span className={`badge sev-${detail.severity}`}>{detail.severity}</span> · estado: <strong>{detail.status}</strong>
