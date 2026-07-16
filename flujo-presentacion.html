@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SIG-I · Flujo de la aplicación</title>
+<style>
+  /* ---- Tokens de color (claro por defecto) ---- */
+  :root {
+    --ground: #eef2f8;
+    --paper: #ffffff;
+    --panel: #f6f9fd;
+    --ink: #0d1b2a;
+    --ink-soft: #40556b;
+    --ink-mute: #6a7f96;
+    --line: #d3deeb;
+    --line-soft: #e4ecf5;
+    --navy: #0a2540;
+    --accent: #2563eb;
+    --accent-ink: #ffffff;
+    --crit: #dc2626;
+    --high: #d97706;
+    --ok: #15803d;
+    --info: #2563eb;
+    --shadow: 0 1px 2px rgba(10,37,64,.06), 0 12px 30px rgba(10,37,64,.08);
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #060f1c;
+      --paper: #0f2032;
+      --panel: #0c1a2b;
+      --ink: #e7eff8;
+      --ink-soft: #a9bccf;
+      --ink-mute: #7690a8;
+      --line: #1e3346;
+      --line-soft: #16283a;
+      --navy: #0a2540;
+      --accent: #4d8bff;
+      --accent-ink: #061423;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    }
+  }
+  /* Overrides explícitos del toggle (ganan a la media query en ambos sentidos) */
+  :root[data-theme="light"] {
+    --ground:#eef2f8; --paper:#fff; --panel:#f6f9fd; --ink:#0d1b2a; --ink-soft:#40556b;
+    --ink-mute:#6a7f96; --line:#d3deeb; --line-soft:#e4ecf5; --accent:#2563eb; --accent-ink:#fff;
+    --shadow:0 1px 2px rgba(10,37,64,.06), 0 12px 30px rgba(10,37,64,.08);
+  }
+  :root[data-theme="dark"] {
+    --ground:#060f1c; --paper:#0f2032; --panel:#0c1a2b; --ink:#e7eff8; --ink-soft:#a9bccf;
+    --ink-mute:#7690a8; --line:#1e3346; --line-soft:#16283a; --accent:#4d8bff; --accent-ink:#061423;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", "Consolas", monospace; }
+
+  /* ---- Barra superior ---- */
+  header.bar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 1rem;
+    padding: .7rem 1.4rem;
+    background: color-mix(in srgb, var(--navy) 92%, black);
+    color: #eaf1fb;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  header.bar .logo {
+    font-weight: 800; letter-spacing: -.02em; font-size: 1.05rem;
+    display: flex; align-items: center; gap: .55rem;
+  }
+  header.bar .logo .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--crit); box-shadow: 0 0 0 4px rgba(220,38,38,.25); }
+  header.bar .sep { color: rgba(234,241,251,.4); }
+  header.bar .tag { font-size: .8rem; color: rgba(234,241,251,.75); font-weight: 500; }
+  header.bar .spacer { flex: 1; }
+  .toggle {
+    background: rgba(255,255,255,.08); color: #eaf1fb; border: 1px solid rgba(255,255,255,.14);
+    border-radius: 999px; padding: .38rem .8rem; font-size: .8rem; cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; gap: .4rem; transition: background .15s;
+  }
+  .toggle:hover { background: rgba(255,255,255,.16); }
+  .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- Contenedor ---- */
+  main { max-width: 1080px; margin: 0 auto; padding: 2.4rem 1.4rem 4rem; }
+
+  /* ---- Hero ---- */
+  .hero { margin-bottom: 2.4rem; }
+  .eyebrow { font-size: .72rem; text-transform: uppercase; letter-spacing: .16em; color: var(--accent); font-weight: 700; }
+  .hero h1 { font-size: clamp(1.8rem, 4.5vw, 2.9rem); line-height: 1.05; letter-spacing: -.03em; margin: .5rem 0 .6rem; text-wrap: balance; }
+  .hero p { max-width: 62ch; color: var(--ink-soft); font-size: 1.02rem; margin: 0; }
+
+  /* ---- Secciones ---- */
+  section { margin-top: 2.6rem; }
+  .sec-head { display: flex; align-items: baseline; gap: .7rem; margin-bottom: 1.1rem; border-bottom: 1px solid var(--line); padding-bottom: .55rem; }
+  .sec-head .num { font-family: ui-monospace, monospace; font-size: .82rem; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
+  .sec-head h2 { font-size: 1.28rem; letter-spacing: -.02em; margin: 0; }
+  .sec-head .hint { margin-left: auto; font-size: .82rem; color: var(--ink-mute); }
+
+  /* ---- Leyenda de roles ---- */
+  .roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: .8rem; }
+  .role {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: .85rem .95rem; box-shadow: var(--shadow); border-left: 4px solid var(--rc, var(--accent));
+  }
+  .role .name { font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: .5rem; }
+  .role .pip { width: 9px; height: 9px; border-radius: 2px; background: var(--rc, var(--accent)); }
+  .role .home { font-size: .8rem; color: var(--ink-mute); margin-top: .3rem; }
+  .role .home code { color: var(--ink-soft); }
+
+  /* ---- Mapa de navegación (SVG) ---- */
+  .mapwrap { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem; overflow-x: auto; }
+  .mapwrap svg { display: block; width: 100%; min-width: 760px; height: auto; }
+  .map-node { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+  .map-node.accent { fill: color-mix(in srgb, var(--accent) 14%, var(--paper)); stroke: var(--accent); }
+  .map-label { fill: var(--ink); font-size: 15px; font-weight: 600; font-family: system-ui, sans-serif; }
+  .map-route { fill: var(--ink-mute); font-size: 12px; font-family: ui-monospace, monospace; }
+  .map-edge { fill: none; stroke: var(--line); stroke-width: 1.6; }
+  .map-rolelabel { font-size: 11.5px; font-weight: 700; font-family: ui-monospace, monospace; }
+  .map-frame { fill: none; stroke: var(--line-soft); stroke-width: 1.4; stroke-dasharray: 5 5; }
+  .map-frametext { fill: var(--ink-mute); font-size: 12px; font-weight: 700; letter-spacing: .08em; font-family: system-ui, sans-serif; text-transform: uppercase; }
+
+  /* ---- Tarjetas de pantalla ---- */
+  .screens { display: grid; gap: 1.1rem; }
+  .screen {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .screen > .top { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem .8rem; padding: .9rem 1.1rem; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .screen .stitle { font-weight: 800; letter-spacing: -.01em; font-size: 1.05rem; }
+  .screen .route { font-size: .82rem; padding: .1rem .5rem; border-radius: 6px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+  .screen .who { margin-left: auto; display: flex; gap: .35rem; flex-wrap: wrap; }
+  .rbadge { font-size: .68rem; font-weight: 700; padding: .12rem .45rem; border-radius: 999px; color: #fff; letter-spacing: .02em; }
+
+  .flowlist { padding: .5rem 1.1rem 1.1rem; display: grid; gap: .55rem; }
+  .step { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; padding: .55rem .2rem; border-bottom: 1px dashed var(--line-soft); }
+  .step:last-child { border-bottom: none; }
+  .chip { font-size: .82rem; padding: .28rem .6rem; border-radius: 8px; white-space: nowrap; }
+  .chip.btn { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .chip.evt { background: transparent; color: var(--ink-soft); border: 1px dashed var(--line); font-style: italic; }
+  .chip.act { background: color-mix(in srgb, var(--ink) 6%, var(--paper)); color: var(--ink-soft); border: 1px solid var(--line); }
+  .chip.api { font-family: ui-monospace, monospace; font-size: .78rem; background: var(--panel); border: 1px solid var(--line); color: var(--ink); }
+  .chip.api .m { font-weight: 800; margin-right: .35rem; }
+  .m.get { color: var(--info); } .m.post { color: var(--ok); } .m.patch { color: var(--high); } .m.delete { color: var(--crit); }
+  .chip.res { color: var(--ink); font-weight: 600; }
+  .chip.res.crit { color: var(--crit); }
+  .arrow { color: var(--ink-mute); font-weight: 700; flex: none; }
+  .note { grid-column: 1 / -1; font-size: .8rem; color: var(--ink-mute); padding-top: .2rem; }
+
+  /* ---- Timeline del ciclo ---- */
+  .timeline { position: relative; display: grid; gap: .8rem; padding-left: 1.4rem; }
+  .timeline::before { content: ""; position: absolute; left: 6px; top: .4rem; bottom: .4rem; width: 2px; background: var(--line); }
+  .tl { position: relative; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: .7rem .95rem; box-shadow: var(--shadow); }
+  .tl::before { content: ""; position: absolute; left: -1.4rem; top: 1rem; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid var(--paper); }
+  .tl .who { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); font-weight: 700; }
+  .tl .what { margin-top: .12rem; }
+  .tl .what code { font-family: ui-monospace, monospace; font-size: .82rem; color: var(--ink-soft); }
+
+  /* ---- Stack tecnológico ---- */
+  .stack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  @media (max-width: 720px) { .stack-grid { grid-template-columns: 1fr; } }
+  .techlist { padding: .4rem 1.1rem 1rem; display: grid; gap: 0; }
+  .tech { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem 1rem; padding: .6rem .2rem; border-bottom: 1px dashed var(--line-soft); }
+  .tech:last-child { border-bottom: none; }
+  .tech .tname { font-weight: 700; font-size: .92rem; min-width: 210px; }
+  .tech .tuse { color: var(--ink-mute); font-size: .85rem; flex: 1; }
+
+  footer { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--ink-mute); font-size: .85rem; display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; }
+  footer .stack b { color: var(--ink-soft); font-weight: 700; }
+
+  @media print {
+    header.bar { position: static; } .toggle { display: none; }
+    body { background: #fff; } .screen, .role, .tl, .mapwrap { box-shadow: none; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+  <header class="bar">
+    <span class="logo"><span class="dot"></span> SIG-I</span>
+    <span class="sep">/</span>
+    <span class="tag">Sistema Integral de Gestión de Incidencias</span>
+    <span class="spacer"></span>
+    <button class="toggle" id="themeBtn" aria-label="Cambiar tema">◐ <span id="themeTxt">Tema</span></button>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="eyebrow">Flujo de la aplicación</div>
+      <h1>Cómo se mueve el usuario, pantalla por pantalla</h1>
+      <p>Recorrido funcional del sistema: desde el inicio de sesión hasta cada acción. Cada botón se traza hasta su acción de Redux, el endpoint de la API que consume y el resultado en pantalla.</p>
+    </div>
+
+    <!-- 1 · ROLES -->
+    <section>
+      <div class="sec-head"><span class="num">01</span><h2>Roles y punto de entrada</h2><span class="hint">tras iniciar sesión, cada rol aterriza en su panel</span></div>
+      <div class="roles">
+        <div class="role" style="--rc:#0ea5e9"><div class="name"><span class="pip"></span>Usuario general</div><div class="home">Reporta incidencias · inicia en <code>/</code></div></div>
+        <div class="role" style="--rc:#7c3aed"><div class="name"><span class="pip"></span>Jefe de carrera</div><div class="home">Reporta y sigue sus tickets · inicia en <code>/mis-tickets</code></div></div>
+        <div class="role" style="--rc:#d97706"><div class="name"><span class="pip"></span>Admin de área</div><div class="home">Gestiona su área (TI / Mant. / Seg.) · inicia en <code>/area</code></div></div>
+        <div class="role" style="--rc:#dc2626"><div class="name"><span class="pip"></span>Operaciones</div><div class="home">Acceso total · inicia en <code>/operaciones</code></div></div>
+        <div class="role" style="--rc:#15803d"><div class="name"><span class="pip"></span>Rector</div><div class="home">Solo lectura · inicia en <code>/ejecutivo</code></div></div>
+      </div>
+    </section>
+
+    <!-- 2 · MAPA -->
+    <section>
+      <div class="sec-head"><span class="num">02</span><h2>Mapa de navegación</h2><span class="hint">login → redirección por rol → paneles</span></div>
+      <div class="mapwrap">
+        <svg viewBox="0 0 900 470" role="img" aria-label="Mapa de navegación entre pantallas">
+          <!-- marco navbar -->
+          <rect class="map-frame" x="486" y="18" width="398" height="434" rx="14"></rect>
+          <text class="map-frametext" x="500" y="40">Navegación por Navbar (según rol)</text>
+
+          <!-- Login / Register -->
+          <rect class="map-node accent" x="24" y="150" width="150" height="56" rx="12"></rect>
+          <text class="map-label" x="99" y="176" text-anchor="middle">Login</text>
+          <text class="map-route" x="99" y="194" text-anchor="middle">/login</text>
+
+          <rect class="map-node" x="24" y="232" width="150" height="52" rx="12"></rect>
+          <text class="map-label" x="99" y="256" text-anchor="middle">Register</text>
+          <text class="map-route" x="99" y="272" text-anchor="middle">/register</text>
+          <path class="map-edge" d="M99,232 L99,206" ></path>
+
+          <!-- Decisión -->
+          <rect class="map-node accent" x="236" y="158" width="176" height="76" rx="14"></rect>
+          <text class="map-label" x="324" y="188" text-anchor="middle">Redirección</text>
+          <text class="map-label" x="324" y="208" text-anchor="middle">por rol</text>
+          <path class="map-edge" d="M174,178 C205,178 210,196 236,196"></path>
+
+          <!-- Pantallas -->
+          <g>
+            <rect class="map-node" x="500" y="58" width="360" height="44" rx="11"></rect>
+            <text class="map-label" x="520" y="85">Reportar incidencia</text>
+            <text class="map-route" x="842" y="85" text-anchor="end">/</text>
+
+            <rect class="map-node" x="500" y="120" width="360" height="44" rx="11"></rect>
+            <text class="map-label" x="520" y="147">Mis reportes</text>
+            <text class="map-route" x="842" y="147" text-anchor="end">/mis-tickets</text>
+
+            <rect class="map-node" x="500" y="182" width="360" height="44" rx="11"></rect>
+            <text class="map-label" x="520" y="209">Panel de área / Todos los tickets</text>
+            <text class="map-route" x="842" y="209" text-anchor="end">/area</text>
+
+            <rect class="map-node" x="500" y="244" width="360" height="44" rx="11"></rect>
+            <text class="map-label" x="520" y="271">Panel global</text>
+            <text class="map-route" x="842" y="271" text-anchor="end">/operaciones</text>
+
+            <rect class="map-node" x="500" y="306" width="360" height="44" rx="11"></rect>
+            <text class="map-label" x="520" y="333">Dashboard ejecutivo</text>
+            <text class="map-route" x="842" y="333" text-anchor="end">/ejecutivo</text>
+
+            <rect class="map-node" x="500" y="368" width="360" height="44" rx="11"></rect>
+            <text class="map-label" x="520" y="395">Foro institucional</text>
+            <text class="map-route" x="842" y="395" text-anchor="end">/foro</text>
+          </g>
+
+          <!-- edges decisión -> home por rol -->
+          <path class="map-edge" d="M412,182 C450,150 462,86 500,80" style="stroke:#0ea5e9"></path>
+          <text class="map-rolelabel" x="430" y="120" fill="#0ea5e9">usuario_general</text>
+
+          <path class="map-edge" d="M412,190 C452,175 470,148 500,142" style="stroke:#7c3aed"></path>
+          <text class="map-rolelabel" x="430" y="168" fill="#7c3aed">jefe_carrera</text>
+
+          <path class="map-edge" d="M412,200 C452,202 470,206 500,204" style="stroke:#d97706"></path>
+          <text class="map-rolelabel" x="430" y="222" fill="#d97706">admin_area</text>
+
+          <path class="map-edge" d="M412,210 C452,232 470,262 500,266" style="stroke:#dc2626"></path>
+          <text class="map-rolelabel" x="430" y="258" fill="#dc2626">operaciones</text>
+
+          <path class="map-edge" d="M412,218 C455,268 466,322 500,328" style="stroke:#15803d"></path>
+          <text class="map-rolelabel" x="430" y="300" fill="#15803d">rector</text>
+        </svg>
+      </div>
+      <p class="note" style="color:var(--ink-mute);font-size:.82rem;margin-top:.6rem">
+        <b style="color:var(--ink-soft)">ProtectedRoute</b> vigila cada ruta: sin sesión → <code class="mono">/login</code>; con sesión pero rol no autorizado → <code class="mono">/</code>. El <b style="color:var(--ink-soft)">Foro</b> es accesible por todos desde la Navbar.
+      </p>
+    </section>
+
+    <!-- 3 · PANTALLAS -->
+    <section>
+      <div class="sec-head"><span class="num">03</span><h2>Recorrido por pantalla</h2><span class="hint">botón → acción Redux → endpoint → resultado</span></div>
+      <div class="screens" id="screens"></div>
+    </section>
+
+    <!-- 4 · CICLO -->
+    <section>
+      <div class="sec-head"><span class="num">04</span><h2>Ciclo completo de una incidencia</h2><span class="hint">de la interfaz a la base de datos</span></div>
+      <div class="timeline">
+        <div class="tl"><div class="who">Usuario → React/Redux</div><div class="what">Inicia sesión. <code>dispatch(login)</code> guarda el JWT y redirige al panel según el rol.</div></div>
+        <div class="tl"><div class="who">React → API</div><div class="what"><code>POST /auth/login</code> valida credenciales con bcrypt y responde JWT + usuario.</div></div>
+        <div class="tl"><div class="who">Usuario → React/Redux</div><div class="what">Reporta una incidencia. <code>dispatch(createTicket)</code> → <code>POST /tickets</code>.</div></div>
+        <div class="tl"><div class="who">API → MongoDB</div><div class="what">Crea el ticket asignando <b>área y severidad automáticamente</b> según el código INC.</div></div>
+        <div class="tl"><div class="who">API → tiempo real</div><div class="what">Si la severidad es crítica, emite <b>alerta por Socket.io</b> al área y a Operaciones (≤10&nbsp;s).</div></div>
+        <div class="tl"><div class="who">Admin de área → API</div><div class="what">Avanza el estado del ticket. <code>PATCH /tickets/:id/status</code> exige comentario y queda en <b>AuditLog</b>.</div></div>
+      </div>
+    </section>
+
+    <!-- 5 · STACK -->
+    <section>
+      <div class="sec-head"><span class="num">05</span><h2>Tecnologías utilizadas</h2><span class="hint">arquitectura MERN + tiempo real</span></div>
+      <div class="stack-grid">
+        <article class="screen">
+          <div class="top"><span class="stitle">Frontend</span><span class="route mono">/frontend</span><span class="who"><span class="rbadge" style="background:#2563eb">SPA</span></span></div>
+          <div class="techlist">
+            <div class="tech"><span class="tname">React 19</span><span class="tuse">Librería de interfaz (componentes)</span></div>
+            <div class="tech"><span class="tname">Vite 7</span><span class="tuse">Bundler y servidor de desarrollo</span></div>
+            <div class="tech"><span class="tname">React Router 7</span><span class="tuse">Enrutamiento y rutas protegidas por rol</span></div>
+            <div class="tech"><span class="tname">Redux Toolkit + React-Redux</span><span class="tuse">Estado global: slices auth, tickets, foro y dashboard</span></div>
+            <div class="tech"><span class="tname">Socket.io-client</span><span class="tuse">Recepción de alertas en tiempo real</span></div>
+            <div class="tech"><span class="tname">CSS puro (variables/tema)</span><span class="tuse">Diseño responsivo, sin framework de UI</span></div>
+          </div>
+        </article>
+        <article class="screen">
+          <div class="top"><span class="stitle">Backend</span><span class="route mono">/backend</span><span class="who"><span class="rbadge" style="background:#15803d">API REST</span></span></div>
+          <div class="techlist">
+            <div class="tech"><span class="tname">Node.js + Express 4</span><span class="tuse">Servidor y enrutamiento de la API</span></div>
+            <div class="tech"><span class="tname">MongoDB + Mongoose 7</span><span class="tuse">Base de datos y modelos (Atlas)</span></div>
+            <div class="tech"><span class="tname">JSON Web Token (JWT)</span><span class="tuse">Autenticación con tokens</span></div>
+            <div class="tech"><span class="tname">bcryptjs</span><span class="tuse">Hash seguro de contraseñas</span></div>
+            <div class="tech"><span class="tname">Socket.io</span><span class="tuse">Alertas en tiempo real (críticos ≤10&nbsp;s)</span></div>
+            <div class="tech"><span class="tname">Reportes CSV / PDF</span><span class="tuse">Generación propia, sin dependencias externas</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <span class="stack"><b>Arquitectura:</b> MERN (MongoDB · Express · React · Node)</span>
+      <span class="stack"><b>Extras:</b> JWT · Socket.io · Redux Toolkit</span>
+    </footer>
+  </main>
+
+<script>
+  // ---- Datos del flujo por pantalla ----
+  const R = { ug:['#0ea5e9','Usuario'], jc:['#7c3aed','Jefe carrera'], aa:['#d97706','Admin área'], op:['#dc2626','Operaciones'], re:['#15803d','Rector'], all:['#64748b','Todos'] };
+  const screens = [
+    { title:'Login', route:'/login', roles:['all'], steps:[
+      { btn:'Entrar', act:'dispatch(login)', m:'POST', api:'/auth/login', res:'Guarda JWT → redirige por rol' },
+      { evt:'credenciales inválidas', res:'Muestra alerta de error', crit:true },
+      { btn:'Regístrate', act:'link', res:'Navega a /register' },
+    ]},
+    { title:'Register', route:'/register', roles:['all'], steps:[
+      { btn:'Crear cuenta', act:'dispatch(register)', m:'POST', api:'/auth/register', res:'Dev: auto-login → panel' },
+      { evt:'producción', res:'Mensaje: verifica tu correo' },
+    ]},
+    { title:'Reportar incidencia', route:'/', roles:['ug','jc','op'], steps:[
+      { btn:'Enviar reporte', act:'dispatch(createTicket)', m:'POST', api:'/tickets', res:'Navega a /mis-tickets' },
+      { btn:'🚨 Emergencia', act:'dispatch(createEmergency)', m:'POST', api:'/tickets/emergency', res:'Ticket crítico + alerta', crit:true },
+      { note:'El área y la severidad se asignan solas según el tipo INC elegido.' },
+    ]},
+    { title:'Mis reportes', route:'/mis-tickets', roles:['ug','jc','op'], steps:[
+      { evt:'al entrar', act:'dispatch(fetchTickets{mine:1})', m:'GET', api:'/tickets?mine=1', res:'Solo tickets propios' },
+      { btn:'clic en tarjeta', act:'dispatch(fetchTicket)', m:'GET', api:'/tickets/:id', res:'Abre el detalle' },
+      { btn:'Enviar (comentario)', act:'dispatch(addComment)', m:'POST', api:'/tickets/:id/comments', res:'Añade al seguimiento' },
+      { btn:'Cerrar', act:'dispatch(clearDetail)', res:'Cierra el detalle (sin red)' },
+    ]},
+    { title:'Panel de área / Todos los tickets', route:'/area', roles:['aa','op'], steps:[
+      { evt:'filtros', act:'dispatch(fetchTickets)', m:'GET', api:'/tickets?status=&severity=&area=', res:'Tabla filtrada' },
+      { btn:'→ siguiente estado', act:'dispatch(updateStatus)', m:'PATCH', api:'/tickets/:id/status', res:'Avanza el flujo (con comentario)' },
+      { btn:'Reasignar', act:'dispatch(reassignTicket)', m:'PATCH', api:'/tickets/:id/reassign', res:'Cambia responsable + motivo' },
+      { note:'Operaciones ve todo y filtra por área; el admin solo ve su área (forzado por el backend).' },
+    ]},
+    { title:'Panel global', route:'/operaciones', roles:['op'], steps:[
+      { evt:'al entrar / cada 60s', act:'dispatch(fetchGlobal + fetchHeatmap)', m:'GET', api:'/dashboard/global · /heatmap', res:'KPIs + mapa de calor' },
+      { btn:'Exportar CSV', act:'fetch autenticado', m:'GET', api:'/dashboard/reports/tickets.csv', res:'Descarga archivo' },
+      { btn:'Exportar PDF', act:'fetch autenticado', m:'GET', api:'/dashboard/reports/tickets.pdf', res:'Descarga archivo' },
+    ]},
+    { title:'Dashboard ejecutivo', route:'/ejecutivo', roles:['re','op'], steps:[
+      { evt:'al entrar', act:'dispatch(fetchExecutive)', m:'GET', api:'/dashboard/executive', res:'SLA, tiempos y volúmenes' },
+      { note:'Solo lectura. El color del % de SLA cambia: verde ≥90, naranja ≥70, rojo por debajo.' },
+    ]},
+    { title:'Foro institucional', route:'/foro', roles:['all'], steps:[
+      { evt:'al entrar / filtrar', act:'dispatch(fetchPosts)', m:'GET', api:'/forum', res:'Hilos por categoría' },
+      { btn:'Publicar', act:'dispatch(createPost)', m:'POST', api:'/forum', res:'Nuevo hilo (anónimo opcional)' },
+      { btn:'clic en hilo', act:'dispatch(fetchPost)', m:'GET', api:'/forum/:id', res:'Hilo + respuestas' },
+      { btn:'Responder', act:'dispatch(addReply)', m:'POST', api:'/forum/:id/replies', res:'Respuesta (oficial si el rol lo permite)' },
+      { btn:'Fijar / Cerrar', act:'dispatch(moderatePost)', m:'PATCH', api:'/forum/:id/moderate', res:'Solo Operaciones' },
+      { btn:'Eliminar', act:'dispatch(deletePost)', m:'DELETE', api:'/forum/:id', res:'Solo Operaciones', crit:true },
+    ]},
+  ];
+
+  const esc = (s) => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const A = '<span class="arrow">→</span>';
+
+  function stepHTML(s) {
+    if (s.note) return `<div class="step"><div class="note">↳ ${esc(s.note)}</div></div>`;
+    const parts = [];
+    if (s.btn) parts.push(`<span class="chip btn">${esc(s.btn)}</span>`);
+    if (s.evt) parts.push(`<span class="chip evt">${esc(s.evt)}</span>`);
+    if (s.act && s.act !== 'link') parts.push(`<span class="chip act mono">${esc(s.act)}</span>`);
+    if (s.api) parts.push(`<span class="chip api"><span class="m ${s.m.toLowerCase()}">${s.m}</span>${esc(s.api)}</span>`);
+    if (s.res) parts.push(`<span class="chip res ${s.crit?'crit':''}">${esc(s.res)}</span>`);
+    return `<div class="step">${parts.join(A)}</div>`;
+  }
+
+  document.getElementById('screens').innerHTML = screens.map(sc => `
+    <article class="screen">
+      <div class="top">
+        <span class="stitle">${esc(sc.title)}</span>
+        <span class="route mono">${esc(sc.route)}</span>
+        <span class="who">${sc.roles.map(r => `<span class="rbadge" style="background:${R[r][0]}">${R[r][1]}</span>`).join('')}</span>
+      </div>
+      <div class="flowlist">${sc.steps.map(stepHTML).join('')}</div>
+    </article>
+  `).join('');
+
+  // ---- Toggle de tema ----
+  const root = document.documentElement, btn = document.getElementById('themeBtn'), txt = document.getElementById('themeTxt');
+  const saved = localStorage.getItem('sigi_flow_theme');
+  if (saved) root.setAttribute('data-theme', saved);
+  const label = () => { const d = (root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')); txt.textContent = d === 'dark' ? 'Claro' : 'Oscuro'; };
+  label();
+  btn.addEventListener('click', () => {
+    const cur = root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('sigi_flow_theme', next);
+    label();
+  });
+</script>
+</body>
+</html>
