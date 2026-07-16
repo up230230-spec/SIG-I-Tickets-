@@ -8,6 +8,9 @@ const { PERMISSIONS } = require('../config/roles');
 
 router.use(protect);
 
+// Actividad personal: disponible para CUALQUIER rol autenticado (cada quien la suya).
+router.get('/me', ctrl.myActivity);
+
 router.get('/global', requirePermission(PERMISSIONS.DASHBOARD_GLOBAL), ctrl.global);
 router.get('/heatmap', requirePermission(PERMISSIONS.DASHBOARD_GLOBAL), ctrl.heatmap);
 router.get('/executive', requirePermission(PERMISSIONS.DASHBOARD_EXEC), ctrl.executive);

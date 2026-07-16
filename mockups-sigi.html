@@ -1,0 +1,449 @@
+<title>SIG-I · Guía de estilos y mockups</title>
+<style>
+  :root {
+    /* Azules institucionales SIG-I */
+    --blue-900: #0a2540; --blue-800: #103a66; --blue-700: #1e4f8a;
+    --blue-600: #2563eb; --blue-500: #3b82f6; --blue-400: #60a5fa;
+    --blue-100: #dbeafe; --blue-50: #eff6ff;
+    /* Neutros con sesgo azul (elegidos, no por defecto) */
+    --bg: #eef2f8; --panel: #f8fafc; --surface: #ffffff;
+    --text: #0f172a; --muted: #64748b; --border: #dde5ef;
+    /* Semánticos */
+    --crit-bg:#fee2e2; --crit-fg:#b91c1c;
+    --alta-bg:#ffedd5; --alta-fg:#c2410c;
+    --ok-bg:#dcfce7;  --ok-fg:#15803d;
+    --radius: 12px;
+    --shadow: 0 2px 10px rgba(16,58,102,.08);
+    --shadow-lg: 0 10px 30px rgba(10,37,64,.12);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#070f1a; --panel:#0d1a2b; --surface:#0f2036;
+      --text:#e6eef8; --muted:#8da0bd; --border:#1e3350;
+      --blue-800:#7fb0ee; --blue-900:#a9cbf5; --blue-700:#6fa4e8;
+      --blue-100:#16324f; --blue-50:#102a44;
+      --shadow: 0 2px 12px rgba(0,0,0,.4); --shadow-lg: 0 14px 34px rgba(0,0,0,.5);
+      --crit-bg:#3a1414; --crit-fg:#fca5a5;
+      --alta-bg:#3a2410; --alta-fg:#fdba74;
+      --ok-bg:#0f2e1c;  --ok-fg:#86efac;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:#070f1a; --panel:#0d1a2b; --surface:#0f2036;
+    --text:#e6eef8; --muted:#8da0bd; --border:#1e3350;
+    --blue-800:#7fb0ee; --blue-900:#a9cbf5; --blue-700:#6fa4e8;
+    --blue-100:#16324f; --blue-50:#102a44;
+    --shadow: 0 2px 12px rgba(0,0,0,.4); --shadow-lg: 0 14px 34px rgba(0,0,0,.5);
+    --crit-bg:#3a1414; --crit-fg:#fca5a5;
+    --alta-bg:#3a2410; --alta-fg:#fdba74;
+    --ok-bg:#0f2e1c;  --ok-fg:#86efac;
+  }
+  :root[data-theme="light"] {
+    --bg: #eef2f8; --panel:#f8fafc; --surface:#ffffff;
+    --text:#0f172a; --muted:#64748b; --border:#dde5ef;
+    --blue-800:#103a66; --blue-900:#0a2540; --blue-700:#1e4f8a;
+    --shadow: 0 2px 10px rgba(16,58,102,.08); --shadow-lg: 0 10px 30px rgba(10,37,64,.12);
+    --crit-bg:#fee2e2; --crit-fg:#b91c1c;
+    --alta-bg:#ffedd5; --alta-fg:#c2410c;
+    --ok-bg:#dcfce7;  --ok-fg:#15803d;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.55;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* --- Cabecera --- */
+  header.masthead {
+    background:
+      radial-gradient(120% 140% at 85% -10%, rgba(37,99,235,.35), transparent 60%),
+      linear-gradient(135deg, #0a2540, #103a66 55%, #1e4f8a);
+    color: #fff; padding: 3.2rem 0 2.6rem;
+  }
+  .eyebrow { text-transform: uppercase; letter-spacing: .18em; font-size: .72rem;
+    font-weight: 600; color: var(--blue-100); }
+  header.masthead h1 { font-size: clamp(1.9rem, 4vw, 3rem); margin: .5rem 0 .4rem;
+    font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
+  header.masthead p { color: #cddffb; max-width: 60ch; margin: 0; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.4rem; }
+  .tag { font-size: .74rem; font-weight: 600; letter-spacing: .02em;
+    padding: .3rem .7rem; border-radius: 999px;
+    background: rgba(255,255,255,.12); color: #eaf2ff; border: 1px solid rgba(255,255,255,.18); }
+
+  main { padding: 3rem 0 4rem; }
+  section { margin-bottom: 3.2rem; }
+  .sec-head { display: flex; align-items: baseline; gap: .8rem; margin-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border); padding-bottom: .6rem; }
+  .sec-head .n { font-family: var(--mono); font-size: .8rem; color: var(--blue-600); font-weight: 700; }
+  .sec-head h2 { font-size: 1.35rem; margin: 0; color: var(--blue-900); letter-spacing: -.01em; }
+  .lead { color: var(--muted); max-width: 68ch; margin: -.4rem 0 1.4rem; }
+
+  /* --- Paleta --- */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: .8rem; }
+  .sw { border-radius: 10px; overflow: hidden; background: var(--surface);
+    border: 1px solid var(--border); box-shadow: var(--shadow); }
+  .sw .chip { height: 62px; }
+  .sw .info { padding: .5rem .65rem; }
+  .sw .name { font-size: .82rem; font-weight: 600; }
+  .sw .hex { font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+
+  /* --- Tipografía --- */
+  .type-card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.4rem 1.6rem; }
+  .type-row { display: flex; align-items: baseline; gap: 1rem; padding: .7rem 0;
+    border-bottom: 1px dashed var(--border); }
+  .type-row:last-child { border-bottom: 0; }
+  .type-row .lbl { font-family: var(--mono); font-size: .72rem; color: var(--muted);
+    width: 130px; flex-shrink: 0; }
+  .t-h1 { font-size: 2rem; font-weight: 800; color: var(--blue-900); letter-spacing: -.02em; }
+  .t-h2 { font-size: 1.3rem; font-weight: 700; color: var(--blue-900); }
+  .t-body { font-size: .98rem; }
+  .t-meta { font-size: .85rem; color: var(--muted); }
+  .t-kpi { font-size: 2rem; font-weight: 800; color: var(--blue-800); }
+
+  /* --- Grid genérico de componentes --- */
+  .cols { display: grid; gap: 1rem; }
+  .cols.two { grid-template-columns: 1fr 1fr; }
+  .cols.four { grid-template-columns: repeat(4,1fr); }
+  .card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.1rem 1.25rem; }
+  .card h4 { margin: 0 0 .7rem; font-size: .78rem; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--muted); }
+  .stat { text-align: center; }
+  .stat .v { font-size: 2rem; font-weight: 800; color: var(--blue-800); line-height: 1;
+    font-variant-numeric: tabular-nums; }
+  .stat .l { color: var(--muted); font-size: .82rem; margin-top: .35rem; }
+
+  .btn-primary { background: var(--blue-600); color:#fff; border:0; border-radius:8px;
+    padding:.6rem 1rem; font-size:.9rem; font-weight:600; cursor:pointer; }
+  .btn-ghost { background: transparent; color: var(--blue-600); border:1px solid var(--border);
+    border-radius:8px; padding:.55rem .9rem; font-size:.9rem; cursor:pointer; }
+  .badge { display:inline-block; padding:.15rem .55rem; border-radius:999px; font-size:.75rem;
+    font-weight:600; background: var(--blue-100); color: var(--blue-800); }
+  .badge.crit { background: var(--crit-bg); color: var(--crit-fg); }
+  .badge.alta { background: var(--alta-bg); color: var(--alta-fg); }
+  .badge.ok   { background: var(--ok-bg);  color: var(--ok-fg); }
+  .chip-list { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+
+  /* --- Mockups --- */
+  .mock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }
+  .mock { background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow-lg); overflow: hidden; }
+  .mock .bar { display:flex; align-items:center; gap:.4rem; padding:.55rem .8rem;
+    background: var(--panel); border-bottom: 1px solid var(--border); }
+  .mock .bar i { width:10px; height:10px; border-radius:999px; display:inline-block; background:#cbd5e1; }
+  .mock .bar .url { font-family: var(--mono); font-size:.72rem; color: var(--muted);
+    margin-left:.4rem; }
+  .mock .body { padding: 1rem; }
+  .mock .cap { padding: .7rem 1rem 1rem; border-top: 1px solid var(--border); }
+  .mock .cap b { color: var(--blue-900); display:block; font-size:.95rem; }
+  .mock .cap span { color: var(--muted); font-size:.82rem; }
+
+  /* Mini-UI usada dentro de los mockups */
+  .m-nav { background: var(--blue-900); color:#fff; border-radius:8px; padding:.45rem .7rem;
+    display:flex; gap:.7rem; align-items:center; font-size:.72rem; margin-bottom:.7rem; }
+  .m-nav b { font-weight:800; letter-spacing:.02em; }
+  .m-nav a { color:#cddffb; text-decoration:none; }
+  .m-nav a.on { color:#fff; font-weight:600; }
+  .m-nav .sp { flex:1; }
+  .m-card { background: var(--panel); border:1px solid var(--border); border-radius:8px;
+    padding:.6rem .7rem; }
+  .m-card.accent { border-left: 5px solid var(--blue-600); }
+  .m-card.accent.red { border-left-color: var(--crit-fg); }
+  .m-card.accent.amber { border-left-color: var(--alta-fg); }
+  .m-row { display:flex; gap:.5rem; }
+  .m-kpi { flex:1; text-align:center; background: var(--panel); border:1px solid var(--border);
+    border-radius:8px; padding:.55rem .3rem; }
+  .m-kpi .v { font-size:1.25rem; font-weight:800; color: var(--blue-800); font-variant-numeric:tabular-nums; }
+  .m-kpi .l { font-size:.62rem; color: var(--muted); }
+  .m-line { font-size:.74rem; }
+  .m-line .h { font-weight:700; color: var(--blue-800); }
+  .m-mut { color: var(--muted); font-size:.7rem; }
+  .m-field { background: var(--surface); border:1px solid var(--border); border-radius:6px;
+    padding:.4rem .55rem; font-size:.72rem; color: var(--muted); }
+  .m-heat { display:flex; align-items:center; gap:.5rem; margin:.35rem 0; }
+  .m-heat .nm { width:74px; font-size:.68rem; font-weight:600; color: var(--blue-800); }
+  .m-track { flex:1; height:14px; background: var(--blue-50); border-radius:5px; overflow:hidden; }
+  .m-fill { height:100%; }
+  .m-tbl { width:100%; border-collapse:collapse; font-size:.68rem; }
+  .m-tbl th { text-align:left; background: var(--blue-50); color: var(--blue-800);
+    padding:.3rem .4rem; font-weight:600; }
+  .m-tbl td { padding:.3rem .4rem; border-top:1px solid var(--border); }
+  .stack { display:flex; flex-direction:column; gap:.55rem; }
+  .authbox { background: linear-gradient(135deg, var(--blue-800), var(--blue-600));
+    border-radius:8px; padding:1rem; display:flex; justify-content:center; }
+  .authbox .inner { background: var(--surface); border-radius:8px; padding:.8rem; width:82%;
+    display:flex; flex-direction:column; gap:.45rem; }
+  .authbox .ttl { text-align:center; color:#fff; font-weight:800; font-size:.8rem; margin-bottom:.5rem; }
+
+  footer { border-top: 1px solid var(--border); padding: 1.6rem 0 3rem; color: var(--muted);
+    font-size: .85rem; }
+
+  .theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 10;
+    background: rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.25);
+    border-radius:999px; padding:.4rem .8rem; font-size:.78rem; cursor:pointer; backdrop-filter: blur(6px); }
+  :root[data-theme="light"] .theme-toggle { background: var(--surface); color: var(--text); border-color: var(--border); }
+
+  @media (max-width: 820px) {
+    .cols.four { grid-template-columns: 1fr 1fr; }
+    .mock-grid { grid-template-columns: 1fr; }
+    .type-row { flex-direction: column; gap:.2rem; }
+    .type-row .lbl { width:auto; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mock { transition: transform .18s ease, box-shadow .18s ease; }
+    .mock:hover { transform: translateY(-3px); }
+  }
+</style>
+
+<button class="theme-toggle" onclick="(function(){var r=document.documentElement;var d=(r.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))==='dark';r.setAttribute('data-theme', d?'light':'dark');})()">◐ Tema</button>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Sistema de diseño · Diseño de interfaces · UPA</div>
+    <h1>SIG-I — Guía de estilos y mockups</h1>
+    <p>Sistema Integral de Gestión de Incidencias. Documento visual de la identidad,
+       los componentes y las pantallas de la aplicación: la referencia única entre el
+       diseño y el código de producción.</p>
+    <div class="badge-row">
+      <span class="tag">React + Vite</span>
+      <span class="tag">Redux Toolkit</span>
+      <span class="tag">Axios</span>
+      <span class="tag">Express + MongoDB</span>
+      <span class="tag">Socket.io</span>
+      <span class="tag">5 roles</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- PALETA -->
+  <section>
+    <div class="sec-head"><span class="n">01</span><h2>Paleta de color</h2></div>
+    <p class="lead">Azul institucional como identidad; los neutros llevan un ligero sesgo azul.
+       Los colores semánticos (severidad y estado) son independientes del acento y comunican urgencia de un vistazo.</p>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#0a2540"></div><div class="info"><div class="name">Navy 900</div><div class="hex">#0a2540</div></div></div>
+      <div class="sw"><div class="chip" style="background:#103a66"></div><div class="info"><div class="name">Azul 800</div><div class="hex">#103a66</div></div></div>
+      <div class="sw"><div class="chip" style="background:#2563eb"></div><div class="info"><div class="name">Primario 600</div><div class="hex">#2563eb</div></div></div>
+      <div class="sw"><div class="chip" style="background:#60a5fa"></div><div class="info"><div class="name">Azul 400</div><div class="hex">#60a5fa</div></div></div>
+      <div class="sw"><div class="chip" style="background:#dbeafe"></div><div class="info"><div class="name">Azul 100</div><div class="hex">#dbeafe</div></div></div>
+      <div class="sw"><div class="chip" style="background:#f4f7fb;border-bottom:1px solid #e2e8f0"></div><div class="info"><div class="name">Fondo</div><div class="hex">#f4f7fb</div></div></div>
+      <div class="sw"><div class="chip" style="background:#64748b"></div><div class="info"><div class="name">Texto tenue</div><div class="hex">#64748b</div></div></div>
+      <div class="sw"><div class="chip" style="background:#fee2e2"></div><div class="info"><div class="name">Sev. Crítica</div><div class="hex">#b91c1c</div></div></div>
+      <div class="sw"><div class="chip" style="background:#ffedd5"></div><div class="info"><div class="name">Sev. Alta</div><div class="hex">#c2410c</div></div></div>
+      <div class="sw"><div class="chip" style="background:#dcfce7"></div><div class="info"><div class="name">Oficial / OK</div><div class="hex">#15803d</div></div></div>
+    </div>
+  </section>
+
+  <!-- TIPOGRAFIA -->
+  <section>
+    <div class="sec-head"><span class="n">02</span><h2>Tipografía y escala</h2></div>
+    <p class="lead">Stack tipográfico del sistema operativo (sin dependencias de red): nativo, veloz y legible.
+       Tres roles — display para jerarquía, cuerpo para lectura, monoespaciada para datos y tokens.</p>
+    <div class="type-card">
+      <div class="type-row"><span class="lbl">Display · h1 · 800</span><span class="t-h1">Panel global de operaciones</span></div>
+      <div class="type-row"><span class="lbl">Sección · h2 · 700</span><span class="t-h2">Mapa de calor por área</span></div>
+      <div class="type-row"><span class="lbl">Cuerpo · 0.98rem</span><span class="t-body">Cada cambio de estado exige un comentario y queda registrado en la bitácora.</span></div>
+      <div class="type-row"><span class="lbl">Meta · 0.85rem</span><span class="t-meta">TCK-2026-000123 · Tecnologías de la Información · en_proceso</span></div>
+      <div class="type-row"><span class="lbl">KPI · 2rem · 800</span><span class="t-kpi">128</span></div>
+    </div>
+  </section>
+
+  <!-- COMPONENTES -->
+  <section>
+    <div class="sec-head"><span class="n">03</span><h2>Componentes base</h2></div>
+    <p class="lead">Todos derivan de las mismas variables CSS: superficie, radio y sombra comunes; el color codifica estado.</p>
+    <div class="cols two">
+      <div class="card">
+        <h4>Botones y etiquetas</h4>
+        <div class="chip-list" style="margin-bottom:.9rem">
+          <button class="btn-primary">Enviar reporte</button>
+          <button class="btn-ghost">Exportar CSV</button>
+        </div>
+        <div class="chip-list">
+          <span class="badge">media</span>
+          <span class="badge alta">alta</span>
+          <span class="badge crit">crítica</span>
+          <span class="badge ok">respuesta oficial</span>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Tarjetas KPI</h4>
+        <div class="cols four" style="gap:.6rem">
+          <div class="stat"><div class="v">128</div><div class="l">Total</div></div>
+          <div class="stat"><div class="v">37</div><div class="l">Abiertos</div></div>
+          <div class="stat"><div class="v" style="color:var(--crit-fg)">2</div><div class="l">Emergencias</div></div>
+          <div class="stat"><div class="v">5</div><div class="l">Escalados</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols two" style="margin-top:1rem">
+      <div class="card">
+        <h4>Tarjeta de ticket · orilla por tipo</h4>
+        <div class="stack">
+          <div class="m-card accent"><div class="m-line h">Proyector sin señal — Aula B203</div><div class="m-mut">INC-014 · Audiovisuales</div></div>
+          <div class="m-card accent red"><div class="m-line h">🚨 Fuga de agua — Laboratorio 2</div><div class="m-mut">Emergencia · Mantenimiento</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Campos de formulario</h4>
+        <div class="stack">
+          <div class="m-field">Correo institucional · usuario@upa.edu.mx</div>
+          <div class="m-field" style="border-color:var(--blue-500);box-shadow:0 0 0 3px var(--blue-100)">Tipo de incidencia ▾ (con foco)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOCKUPS -->
+  <section>
+    <div class="sec-head"><span class="n">04</span><h2>Mockups de pantalla</h2></div>
+    <p class="lead">Las nueve pantallas de la aplicación, reconstruidas con los mismos componentes del sistema.
+       Cada mockup indica su ruta y el rol que la utiliza.</p>
+
+    <div class="mock-grid">
+
+      <!-- Login -->
+      <article class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">/login</span></div>
+        <div class="body">
+          <div class="authbox"><div class="inner">
+            <div class="ttl" style="color:var(--blue-800)">SIG-I</div>
+            <div class="m-field">Correo institucional</div>
+            <div class="m-field">Contraseña</div>
+            <button class="btn-primary" style="width:100%">Entrar</button>
+            <div style="text-align:center;font-size:.68rem;color:var(--muted)">¿No tienes cuenta? Regístrate</div>
+          </div></div>
+        </div>
+        <div class="cap"><b>Inicio de sesión</b><span>Público · redirige según rol tras autenticar</span></div>
+      </article>
+
+      <!-- Reportar -->
+      <article class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">/</span></div>
+        <div class="body">
+          <div class="m-nav"><b>SIG-I</b><a class="on">Reportar</a><a>Mis reportes</a><a>Foro</a><span class="sp"></span><a>Salir</a></div>
+          <div class="stack">
+            <div class="m-field">Tipo de incidencia ▾</div>
+            <div class="m-field">Título del reporte</div>
+            <div class="m-field">Ubicación (edificio / aula)</div>
+            <div class="m-field" style="height:34px">Descripción…</div>
+            <div class="m-row"><button class="btn-primary" style="flex:1">Enviar reporte</button><button class="btn-ghost" style="color:var(--crit-fg);border-color:var(--crit-bg)">🚨 Emergencia</button></div>
+          </div>
+        </div>
+        <div class="cap"><b>Reportar incidencia</b><span>Usuario general · área y severidad automáticas por código INC</span></div>
+      </article>
+
+      <!-- Mis reportes -->
+      <article class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">/mis-tickets</span></div>
+        <div class="body">
+          <div class="m-nav"><b>SIG-I</b><a>Reportar</a><a class="on">Mis reportes</a><a>Foro</a><span class="sp"></span><a>Salir</a></div>
+          <div class="m-row" style="gap:.55rem">
+            <div class="m-card accent" style="flex:1"><div class="m-line h">Wi-Fi intermitente</div><div class="m-mut">TCK-…101 · <span class="badge alta" style="font-size:.6rem">alta</span></div></div>
+            <div class="m-card accent" style="flex:1"><div class="m-line h">Chapa dañada</div><div class="m-mut">TCK-…098 · <span class="badge ok" style="font-size:.6rem">resuelto</span></div></div>
+          </div>
+          <div class="m-card" style="margin-top:.55rem"><div class="m-line h">Seguimiento</div><div class="m-mut">Operaciones · abierto → en_proceso</div><div class="m-mut">“Se asignó a la brigada de redes.”</div></div>
+        </div>
+        <div class="cap"><b>Mis reportes</b><span>Todos los roles · detalle con hilo de comentarios</span></div>
+      </article>
+
+      <!-- Panel de area -->
+      <article class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">/area</span></div>
+        <div class="body">
+          <div class="m-nav"><b>SIG-I</b><a class="on">Tickets</a><a>Operaciones</a><a>Foro</a><span class="sp"></span><a>Salir</a></div>
+          <div class="m-row" style="margin-bottom:.5rem"><div class="m-field" style="flex:1">Estado ▾</div><div class="m-field" style="flex:1">Área ▾</div><div class="m-field" style="flex:1">Severidad ▾</div></div>
+          <table class="m-tbl">
+            <thead><tr><th>Folio</th><th>Título</th><th>Sev.</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td>…101</td><td>Wi-Fi intermitente</td><td><span class="badge alta" style="font-size:.6rem">alta</span></td><td>abierto</td></tr>
+              <tr><td>…097</td><td>Aire acondicionado</td><td><span class="badge" style="font-size:.6rem">media</span></td><td>en_proceso</td></tr>
+              <tr><td>…090</td><td>Corto en tablero</td><td><span class="badge crit" style="font-size:.6rem">crítica</span></td><td>en_proceso</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="cap"><b>Panel de área / Tickets</b><span>Admin de área y Operaciones · cambio de estado y reasignación</span></div>
+      </article>
+
+      <!-- Panel global -->
+      <article class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">/operaciones</span></div>
+        <div class="body">
+          <div class="m-nav"><b>SIG-I</b><a class="on">Operaciones</a><a>Ejecutivo</a><span class="sp"></span><a>Salir</a></div>
+          <div class="m-row" style="margin-bottom:.6rem">
+            <div class="m-kpi"><div class="v">128</div><div class="l">Total</div></div>
+            <div class="m-kpi"><div class="v">37</div><div class="l">Abiertos</div></div>
+            <div class="m-kpi"><div class="v" style="color:var(--crit-fg)">2</div><div class="l">Emergencias</div></div>
+            <div class="m-kpi"><div class="v">5</div><div class="l">Escalados</div></div>
+          </div>
+          <div class="m-heat"><span class="nm">TI</span><div class="m-track"><div class="m-fill" style="width:82%;background:#2563eb"></div></div></div>
+          <div class="m-heat"><span class="nm">Mtto.</span><div class="m-track"><div class="m-fill" style="width:60%;background:#0ea5e9"></div></div></div>
+          <div class="m-heat"><span class="nm">Seguridad</span><div class="m-track"><div class="m-fill" style="width:34%;background:#6366f1"></div></div></div>
+        </div>
+        <div class="cap"><b>Panel global</b><span>Operaciones · refresco automático 60s · exportar CSV/PDF</span></div>
+      </article>
+
+      <!-- Ejecutivo -->
+      <article class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">/ejecutivo</span></div>
+        <div class="body">
+          <div class="m-nav"><b>SIG-I</b><a class="on">Ejecutivo</a><span class="sp"></span><a>Salir</a></div>
+          <div class="m-row" style="margin-bottom:.6rem">
+            <div class="m-kpi"><div class="v" style="color:var(--ok-fg)">92%</div><div class="l">Cumplimiento SLA</div></div>
+            <div class="m-kpi"><div class="v">18.4h</div><div class="l">Resolución media</div></div>
+            <div class="m-kpi"><div class="v">37</div><div class="l">Backlog</div></div>
+          </div>
+          <div class="m-card"><div class="m-line h">Volumen por severidad</div>
+            <div class="chip-list" style="margin-top:.4rem"><span class="badge crit" style="font-size:.6rem">crítica 6</span><span class="badge alta" style="font-size:.6rem">alta 22</span><span class="badge" style="font-size:.6rem">media 100</span></div>
+          </div>
+        </div>
+        <div class="cap"><b>Dashboard ejecutivo</b><span>Rector · solo lectura · color de SLA por umbral</span></div>
+      </article>
+
+      <!-- Foro -->
+      <article class="mock">
+        <div class="bar"><i></i><i></i><i></i><span class="url">/foro</span></div>
+        <div class="body">
+          <div class="m-nav"><b>SIG-I</b><a>Reportar</a><a class="on">Foro</a><span class="sp"></span><a>Salir</a></div>
+          <div class="stack">
+            <div class="m-card"><div class="m-line h">Propuesta: más bicicleteros 🚲</div><div class="m-mut">sugerencias · 4 respuestas</div></div>
+            <div class="m-card"><div class="m-line h">Gracias a la brigada de redes</div><div class="m-mut">agradecimientos · <span class="badge ok" style="font-size:.6rem">respuesta oficial</span></div></div>
+            <div class="m-card"><div class="m-line h">¿Horario de biblioteca en exámenes?</div><div class="m-mut">preguntas · anónimo</div></div>
+          </div>
+        </div>
+        <div class="cap"><b>Foro institucional</b><span>Todos los roles · publicación anónima · moderación de Operaciones</span></div>
+      </article>
+
+      <!-- Mi actividad (NUEVO) -->
+      <article class="mock" style="outline:2px solid var(--blue-500)">
+        <div class="bar"><i></i><i></i><i></i><span class="url">/mi-actividad</span></div>
+        <div class="body">
+          <div class="m-nav"><b>SIG-I</b><a>Reportar</a><a>Foro</a><a class="on">Mi actividad</a><span class="sp"></span><a>Salir</a></div>
+          <div class="m-row" style="margin-bottom:.55rem">
+            <div class="m-kpi"><div class="v">12</div><div class="l">Reportes</div></div>
+            <div class="m-kpi"><div class="v">34</div><div class="l">Comentarios</div></div>
+            <div class="m-kpi"><div class="v">3</div><div class="l">Hilos foro</div></div>
+            <div class="m-kpi"><div class="v">9</div><div class="l">Respuestas</div></div>
+          </div>
+          <div class="m-card"><div class="m-line h">Actividad reciente</div>
+            <div class="m-mut">🎫 Wi-Fi intermitente · TCK-…101 · 14 jul</div>
+            <div class="m-mut">💬 Propuesta: más bicicleteros · 10 jul</div>
+          </div>
+        </div>
+        <div class="cap"><b>Mi actividad · nuevo</b><span>Todos los roles · huella personal: tickets, foro, comentarios y gestión</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <footer class="wrap" style="border:0">
+    SIG-I — Sistema Integral de Gestión de Incidencias · Guía de estilos y mockups · Universidad Politécnica de Aguascalientes.
+    Los tokens de esta guía reflejan <code style="font-family:var(--mono)">frontend/src/styles/theme.css</code>.
+  </footer>
+</main>

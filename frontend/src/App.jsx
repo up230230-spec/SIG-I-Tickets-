@@ -10,6 +10,7 @@ import AreaPanel from './pages/AreaPanel';
 import GlobalPanel from './pages/GlobalPanel';
 import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import Forum from './pages/Forum';
+import MyActivity from './pages/MyActivity';
 
 import './styles/theme.css';
 import './App.css';
@@ -51,6 +52,9 @@ export default function App() {
 
           {/* Foro (todos los roles autenticados) */}
           <Route path="/foro" element={<ProtectedRoute><Forum /></ProtectedRoute>} />
+
+          {/* Mi actividad — dashboard personal (todos los roles autenticados) */}
+          <Route path="/mi-actividad" element={<ProtectedRoute><MyActivity /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

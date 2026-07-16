@@ -19,6 +19,7 @@ export default function Navbar() {
     { to: '/operaciones', label: 'Operaciones', show: r === 'operaciones' },
     { to: '/ejecutivo', label: 'Ejecutivo', show: ['rector', 'operaciones'].includes(r) },
     { to: '/foro', label: 'Foro', show: true },
+    { to: '/mi-actividad', label: 'Mi actividad', show: true },
   ].filter((l) => l.show);
 
   const onLogout = () => {

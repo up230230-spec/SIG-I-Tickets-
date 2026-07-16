@@ -10,7 +10,11 @@
  */
 const Ticket = require('../models/Ticket');
 const Area = require('../models/Area');
+const Comment = require('../models/Comment');
+const ForumPost = require('../models/ForumPost');
+const ForumReply = require('../models/ForumReply');
 const { AREAS, SEVERITY } = require('../config/incidentCatalog');
+const { PERMISSIONS, roleHasPermission } = require('../config/roles');
 
 const STATUS = Ticket.STATUS;
 
@@ -172,6 +176,121 @@ exports.executive = async (req, res, next) => {
       slaTargets: SLA_HOURS,
       volumeByArea: tally(byArea, Object.values(AREAS)),
       volumeBySeverity: tally(bySeverity, Object.values(SEVERITY)),
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /api/dashboard/me — Actividad personal del usuario autenticado.
+//
+// Reúne en un solo lugar TODO lo que el usuario ha hecho en la plataforma:
+// tickets que reportó, comentarios, hilos y respuestas del foro y —para roles
+// de gestión— tickets asignados y cambios de estado que aplicó. Disponible para
+// CUALQUIER rol (solo requiere sesión); cada rol ve su propia huella.
+exports.myActivity = async (req, res, next) => {
+  try {
+    const uid = req.user._id;
+    // Roles que además gestionan tickets (reciben asignaciones y cambian estados).
+    const manages = roleHasPermission(req.user.role, PERMISSIONS.TICKET_UPDATE_STATUS);
+
+    const [
+      reportedByStatus,   // tickets propios agrupados por estado
+      recentReported,     // últimos tickets reportados (para la lista/timeline)
+      commentsCount,      // comentarios escritos por el usuario
+      statusChanges,      // comentarios que acompañaron un cambio de estado
+      assignedCount,      // tickets asignados actualmente (gestión)
+      resolvedByMe,       // tickets resueltos/cerrados asignados al usuario (gestión)
+      postsCount,         // total de hilos del foro creados
+      posts,              // últimos hilos (para la lista/timeline)
+      repliesCount,       // respuestas en el foro
+      officialReplies,    // respuestas marcadas como oficiales
+    ] = await Promise.all([
+      Ticket.aggregate([
+        { $match: { reportedBy: uid } },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+      Ticket.find({ reportedBy: uid })
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .select('folio title area severity status isEmergency createdAt'),
+      Comment.countDocuments({ author: uid }),
+      Comment.countDocuments({ author: uid, 'statusChange.to': { $ne: null } }),
+      manages ? Ticket.countDocuments({ assignedTo: uid }) : 0,
+      manages
+        ? Ticket.countDocuments({ assignedTo: uid, status: { $in: [STATUS.RESUELTO, STATUS.CERRADO] } })
+        : 0,
+      ForumPost.countDocuments({ author: uid }),
+      ForumPost.find({ author: uid })
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .select('title category pinned closed createdAt'),
+      ForumReply.countDocuments({ author: uid }),
+      ForumReply.countDocuments({ author: uid, isOfficial: true }),
+    ]);
+
+    const byStatus = tally(reportedByStatus, Object.values(STATUS));
+    const reportedTotal = Object.values(byStatus).reduce((a, b) => a + b, 0);
+
+    // Línea de tiempo unificada: mezcla las actividades recientes y las ordena
+    // cronológicamente (lo más nuevo primero) para un feed de "qué he hecho".
+    const timeline = [
+      ...recentReported.map((t) => ({
+        type: 'ticket',
+        at: t.createdAt,
+        title: t.title,
+        meta: `${t.folio} · ${t.area} · ${t.status}`,
+        severity: t.severity,
+        emergency: t.isEmergency,
+        refId: t._id,
+      })),
+      ...posts.map((p) => ({
+        type: 'forum_post',
+        at: p.createdAt,
+        title: p.title,
+        meta: `Foro · ${p.category}${p.pinned ? ' · fijado' : ''}${p.closed ? ' · cerrado' : ''}`,
+        refId: p._id,
+      })),
+    ]
+      .sort((a, b) => new Date(b.at) - new Date(a.at))
+      .slice(0, 12);
+
+    return res.json({
+      user: { id: uid, name: req.user.name, role: req.user.role, email: req.user.email },
+      memberSince: req.user.createdAt,
+      manages,
+      tickets: {
+        reported: reportedTotal,
+        byStatus,
+        recent: recentReported.map((t) => ({
+          id: t._id,
+          folio: t.folio,
+          title: t.title,
+          area: t.area,
+          severity: t.severity,
+          status: t.status,
+          isEmergency: t.isEmergency,
+          createdAt: t.createdAt,
+        })),
+      },
+      management: manages
+        ? { assigned: assignedCount, resolved: resolvedByMe, statusChanges }
+        : null,
+      forum: {
+        posts: postsCount,
+        replies: repliesCount,
+        officialReplies,
+        recent: posts.map((p) => ({
+          id: p._id,
+          title: p.title,
+          category: p.category,
+          pinned: p.pinned,
+          closed: p.closed,
+          createdAt: p.createdAt,
+        })),
+      },
+      comments: commentsCount,
+      timeline,
     });
   } catch (err) {
     next(err);

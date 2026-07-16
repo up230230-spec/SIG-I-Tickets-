@@ -3,38 +3,43 @@
  * Agregados, mapa de calor por área, últimos reportes y exportación CSV/PDF.
  * Refresco automático cada 60s. Estado gestionado con Redux (slice `dashboard`).
  */
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchGlobal, fetchHeatmap } from '../store/dashboardSlice';
 import { api } from '../api/client';
+import useAutoRefresh from '../hooks/useAutoRefresh';
+import useSocketAlerts from '../hooks/useSocketAlerts';
 import Navbar from '../components/Navbar';
 
-// Descarga un reporte autenticado (adjunta el JWT y fuerza la descarga del blob).
+// Descarga un reporte autenticado. El JWT lo adjunta el interceptor de Axios;
+// aquí solo forzamos la descarga del blob recibido.
 const downloadReport = async (format) => {
-  const token = localStorage.getItem('sigi_token');
-  const res = await fetch(`${api.BASE_URL}/dashboard/reports/tickets.${format}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) return alert('No se pudo generar el reporte.');
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `sigi-tickets.${format}`;
-  a.click();
-  URL.revokeObjectURL(url);
+  try {
+    const blob = await api.download(`/dashboard/reports/tickets.${format}`);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sigi-tickets.${format}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    alert('No se pudo generar el reporte.');
+  }
 };
 
 export default function GlobalPanel() {
   const dispatch = useDispatch();
   const { global: data, heatmap: heat, error } = useSelector((s) => s.dashboard);
 
-  useEffect(() => {
-    const load = () => { dispatch(fetchGlobal()); dispatch(fetchHeatmap()); };
-    load();
-    const id = setInterval(load, 60000); // refresco automático
-    return () => clearInterval(id);
+  // Refresco automático cada 60s mediante hook personalizado reutilizable.
+  const load = useCallback(() => {
+    dispatch(fetchGlobal());
+    dispatch(fetchHeatmap());
   }, [dispatch]);
+  useAutoRefresh(load, 60000);
+
+  // Alertas críticas en tiempo real (Socket.io) mediante hook personalizado.
+  const { latest: alert, clear: clearAlert } = useSocketAlerts();
 
   const maxOpen = Math.max(1, ...heat.map((c) => c.open));
 
@@ -48,6 +53,12 @@ export default function GlobalPanel() {
           <button className="btn-ghost" onClick={() => downloadReport('pdf')}>Exportar PDF</button>
         </div>
 
+        {alert && (
+          <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ flex: 1 }}>🚨 Alerta crítica: <strong>{alert.title}</strong> · {alert.area} ({alert.severity})</span>
+            <button className="btn-ghost" onClick={clearAlert}>Descartar</button>
+          </div>
+        )}
         {error && <div className="alert alert-error">{error}</div>}
         {!data ? (
           <p className="meta">Cargando…</p>
