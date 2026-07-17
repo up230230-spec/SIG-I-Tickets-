@@ -56,6 +56,16 @@ export default function MyTickets() {
             </p>
             <p>{detail.description}</p>
 
+            {(detail.images || []).length > 0 && (
+              <div className="photo-gallery">
+                {detail.images.map((src, i) => (
+                  <a key={i} href={src} target="_blank" rel="noreferrer">
+                    <img src={src} alt={`Foto ${i + 1} del reporte`} />
+                  </a>
+                ))}
+              </div>
+            )}
+
             <h3 style={{ color: 'var(--blue-800)' }}>Seguimiento</h3>
             {(detail.comments || []).length === 0 && <p className="meta">Sin comentarios todavía.</p>}
             {(detail.comments || []).map((c) => (

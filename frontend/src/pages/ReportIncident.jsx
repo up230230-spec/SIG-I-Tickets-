@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { createTicket, createEmergency } from '../store/ticketsSlice';
 import { INCIDENT_TYPES, accentFor } from '../config/incidentTypes';
 import Navbar from '../components/Navbar';
+import PhotoUpload from '../components/PhotoUpload';
 
 // Id de cliente para evitar duplicados si se reenvía el formulario.
 const newClientId = () =>
@@ -24,6 +25,7 @@ export default function ReportIncident() {
     location: '',
     description: '',
   });
+  const [images, setImages] = useState([]); // data URLs base64 (máx. 3)
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -34,7 +36,7 @@ export default function ReportIncident() {
     setError('');
     setBusy(true);
     try {
-      await dispatch(createTicket({ ...form, clientSideId: newClientId() })).unwrap();
+      await dispatch(createTicket({ ...form, images, clientSideId: newClientId() })).unwrap();
       navigate('/mis-tickets');
     } catch (err) {
       setError(err || 'No se pudo enviar el reporte.');
@@ -108,6 +110,11 @@ export default function ReportIncident() {
             <label htmlFor="description">Descripción</label>
             <textarea id="description" name="description" rows={4} value={form.description}
               onChange={onChange} required placeholder="Describe lo que ocurre con el mayor detalle posible." />
+          </div>
+
+          <div className="field">
+            <label>Fotos <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(opcional, hasta 3)</span></label>
+            <PhotoUpload value={images} onChange={setImages} max={3} disabled={busy} />
           </div>
 
           <button className="btn-primary" disabled={busy}>
