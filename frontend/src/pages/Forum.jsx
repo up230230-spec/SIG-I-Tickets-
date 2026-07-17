@@ -62,35 +62,37 @@ export default function Forum() {
         <h1>Foro institucional</h1>
         {error && <div className="alert alert-error">{error}</div>}
 
-        <div className="grid cols-2" style={{ alignItems: 'start' }}>
-          {/* Columna izquierda: crear + listar */}
-          <div>
-            <form className="card" onSubmit={createThread}>
-              <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Nuevo hilo</h2>
-              <div className="field">
-                <label>Categoría</label>
-                <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="field">
-                <label>Título</label>
-                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-              </div>
-              <div className="field">
-                <label>Mensaje</label>
-                <textarea rows={3} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} required />
-              </div>
-              <label style={{ display: 'flex', gap: '0.5rem', fontWeight: 400 }}>
-                <input type="checkbox" style={{ width: 'auto' }} checked={form.isAnonymous}
-                  onChange={(e) => setForm({ ...form, isAnonymous: e.target.checked })} />
-                Publicar de forma anónima
-              </label>
-              <button className="btn-primary" style={{ marginTop: '0.75rem' }}>Publicar</button>
-            </form>
+        <div className="forum-grid">
+          {/* Columna izquierda: crear un nuevo hilo */}
+          <form className="card" onSubmit={createThread}>
+            <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Nuevo hilo</h2>
+            <div className="field">
+              <label>Categoría</label>
+              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label>Título</label>
+              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            </div>
+            <div className="field">
+              <label>Mensaje</label>
+              <textarea rows={3} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} required />
+            </div>
+            <label style={{ display: 'flex', gap: '0.5rem', fontWeight: 400 }}>
+              <input type="checkbox" style={{ width: 'auto' }} checked={form.isAnonymous}
+                onChange={(e) => setForm({ ...form, isAnonymous: e.target.checked })} />
+              Publicar de forma anónima
+            </label>
+            <button className="btn-primary" style={{ marginTop: '0.75rem' }}>Publicar</button>
+          </form>
 
-            <div className="toolbar">
-              <div className="field">
+          {/* Columna derecha: conversaciones (lista de hilos) */}
+          <div>
+            <div className="page-head" style={{ marginBottom: '0.5rem' }}>
+              <h2 style={{ margin: 0, color: 'var(--blue-900)' }}>Conversaciones</h2>
+              <div className="field" style={{ marginBottom: 0 }}>
                 <label>Filtrar categoría</label>
                 <select value={category} onChange={(e) => setCategory(e.target.value)}>
                   <option value="">Todas</option>
@@ -110,14 +112,12 @@ export default function Forum() {
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Columna derecha: detalle */}
-          <div>
-            {!detail ? (
-              <p className="empty">Selecciona un hilo para verlo.</p>
-            ) : (
-              <div className="card">
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+        {/* Detalle del hilo seleccionado (ancho completo, debajo) */}
+        {detail && (
+          <div className="card" style={{ marginTop: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
                   <h2 style={{ flex: 1, margin: 0, color: 'var(--blue-900)' }}>
                     {detail.pinned && '📌 '}{detail.title}
                   </h2>
@@ -175,10 +175,8 @@ export default function Forum() {
                     </div>
                   </form>
                 )}
-              </div>
-            )}
           </div>
-        </div>
+        )}
       </section>
     </>
   );

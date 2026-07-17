@@ -10,6 +10,9 @@ import { api } from '../api/client';
 import useAutoRefresh from '../hooks/useAutoRefresh';
 import useSocketAlerts from '../hooks/useSocketAlerts';
 import Navbar from '../components/Navbar';
+import DonutChart from '../components/charts/DonutChart';
+import BarChart from '../components/charts/BarChart';
+import { STATUS_COLORS, STATUS_LABELS, SEVERITY_COLORS } from '../config/chartColors';
 
 // Descarga un reporte autenticado. El JWT lo adjunta el interceptor de Axios;
 // aquí solo forzamos la descarga del blob recibido.
@@ -43,6 +46,18 @@ export default function GlobalPanel() {
 
   const maxOpen = Math.max(1, ...heat.map((c) => c.open));
 
+  // Datos para las gráficas (orden fijo de estados y severidades).
+  const statusData = data
+    ? ['abierto', 'en_proceso', 'resuelto', 'cerrado'].map((s) => ({
+        label: STATUS_LABELS[s], value: data.byStatus[s] || 0, color: STATUS_COLORS[s],
+      }))
+    : [];
+  const severityData = data
+    ? ['critica', 'alta', 'media'].map((s) => ({
+        label: s.charAt(0).toUpperCase() + s.slice(1), value: data.bySeverity[s] || 0, color: SEVERITY_COLORS[s],
+      }))
+    : [];
+
   return (
     <>
       <Navbar />
@@ -69,6 +84,17 @@ export default function GlobalPanel() {
               <div className="card stat-card"><div className="value">{data.byStatus.abierto + data.byStatus.en_proceso}</div><div className="label">Abiertos / en proceso</div></div>
               <div className="card stat-card"><div className="value" style={{ color: '#b91c1c' }}>{data.activeEmergencies}</div><div className="label">Emergencias activas</div></div>
               <div className="card stat-card"><div className="value">{data.escalated}</div><div className="label">Escalados (48h)</div></div>
+            </div>
+
+            <div className="grid cols-2" style={{ marginTop: '1.5rem' }}>
+              <div className="card">
+                <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Tickets por estado</h2>
+                <DonutChart data={statusData} unit="tickets" />
+              </div>
+              <div className="card">
+                <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Tickets por severidad</h2>
+                <BarChart data={severityData} />
+              </div>
             </div>
 
             <h2 style={{ color: 'var(--blue-900)' }}>Mapa de calor por área</h2>

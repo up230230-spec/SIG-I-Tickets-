@@ -11,6 +11,9 @@
  */
 import useActivity from '../hooks/useActivity';
 import Navbar from '../components/Navbar';
+import DonutChart from '../components/charts/DonutChart';
+import BarChart from '../components/charts/BarChart';
+import { STATUS_COLORS, STATUS_LABELS } from '../config/chartColors';
 
 // Etiquetas legibles para los roles.
 const ROLE_LABEL = {
@@ -98,15 +101,32 @@ export default function MyActivity() {
               </>
             )}
 
-            {/* --- Desglose de mis reportes por estado --- */}
-            <h2 style={{ color: 'var(--blue-900)' }}>Mis reportes por estado</h2>
-            <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-              {Object.entries(data.tickets.byStatus).map(([status, count]) => (
-                <span key={status} className="badge" style={{ fontSize: '0.85rem' }}>
-                  {status}: <strong>{count}</strong>
-                </span>
-              ))}
-              {data.tickets.reported === 0 && <span className="meta">Aún no has reportado incidencias.</span>}
+            {/* --- Gráficas: reportes por estado + resumen de actividad --- */}
+            <div className="grid cols-2">
+              <div className="card">
+                <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Mis reportes por estado</h2>
+                {data.tickets.reported === 0 ? (
+                  <p className="meta">Aún no has reportado incidencias.</p>
+                ) : (
+                  <DonutChart
+                    data={['abierto', 'en_proceso', 'resuelto', 'cerrado'].map((s) => ({
+                      label: STATUS_LABELS[s], value: data.tickets.byStatus[s] || 0, color: STATUS_COLORS[s],
+                    }))}
+                    unit="reportes"
+                  />
+                )}
+              </div>
+              <div className="card">
+                <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Resumen de mi actividad</h2>
+                <BarChart
+                  data={[
+                    { label: 'Reportes', value: data.tickets.reported, color: 'var(--blue-600)' },
+                    { label: 'Comentarios', value: data.comments, color: 'var(--blue-600)' },
+                    { label: 'Hilos foro', value: data.forum.posts, color: 'var(--blue-600)' },
+                    { label: 'Respuestas', value: data.forum.replies, color: 'var(--blue-600)' },
+                  ]}
+                />
+              </div>
             </div>
 
             {/* --- Línea de tiempo unificada --- */}

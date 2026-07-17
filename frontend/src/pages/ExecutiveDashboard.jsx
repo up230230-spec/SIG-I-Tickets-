@@ -7,6 +7,9 @@ import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchExecutive } from '../store/dashboardSlice';
 import Navbar from '../components/Navbar';
+import DonutChart from '../components/charts/DonutChart';
+import BarChart from '../components/charts/BarChart';
+import { SEVERITY_COLORS, AREA_COLORS, FALLBACK_COLOR } from '../config/chartColors';
 
 export default function ExecutiveDashboard() {
   const dispatch = useDispatch();
@@ -17,6 +20,21 @@ export default function ExecutiveDashboard() {
   const slaColor = k
     ? k.slaCompliance >= 90 ? '#15803d' : k.slaCompliance >= 70 ? '#c2410c' : '#b91c1c'
     : undefined;
+
+  // Prepara los datos para las gráficas (orden fijo de severidad).
+  const severityData = k
+    ? ['critica', 'alta', 'media'].map((s) => ({
+        label: s.charAt(0).toUpperCase() + s.slice(1),
+        value: k.volumeBySeverity[s] || 0,
+        color: SEVERITY_COLORS[s],
+      }))
+    : [];
+  const areaData = k
+    ? Object.entries(k.volumeByArea)
+        .filter(([a]) => a !== 'sin_definir')
+        .map(([a, n]) => ({ label: a, value: n, color: AREA_COLORS[a] || FALLBACK_COLOR }))
+        .sort((x, y) => y.value - x.value)
+    : [];
 
   return (
     <>
@@ -40,34 +58,12 @@ export default function ExecutiveDashboard() {
 
             <div className="grid cols-2" style={{ marginTop: '1.5rem' }}>
               <div className="card">
-                <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Volumen por área</h2>
-                {Object.entries(k.volumeByArea).map(([area, n]) => (
-                  <div className="heat-row" key={area}>
-                    <span className="name">{area}</span>
-                    <div className="heat-track">
-                      <div className="heat-fill" style={{
-                        width: `${(n / Math.max(1, ...Object.values(k.volumeByArea))) * 100}%`,
-                        background: 'var(--blue-500)',
-                      }} />
-                    </div>
-                    <span className="meta">{n}</span>
-                  </div>
-                ))}
+                <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Distribución por severidad</h2>
+                <DonutChart data={severityData} unit="tickets" />
               </div>
               <div className="card">
-                <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Volumen por severidad</h2>
-                {Object.entries(k.volumeBySeverity).map(([sev, n]) => (
-                  <div className="heat-row" key={sev}>
-                    <span className="name"><span className={`badge sev-${sev}`}>{sev}</span></span>
-                    <div className="heat-track">
-                      <div className="heat-fill" style={{
-                        width: `${(n / Math.max(1, ...Object.values(k.volumeBySeverity))) * 100}%`,
-                        background: 'var(--blue-500)',
-                      }} />
-                    </div>
-                    <span className="meta">{n}</span>
-                  </div>
-                ))}
+                <h2 style={{ marginTop: 0, color: 'var(--blue-900)' }}>Volumen por área</h2>
+                <BarChart data={areaData} />
               </div>
             </div>
 
